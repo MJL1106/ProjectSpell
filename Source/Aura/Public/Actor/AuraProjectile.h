@@ -55,6 +55,4 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UAudioComponent> LoopingSoundComponent;
-
-	void ProjectileEffects() const;
 };
