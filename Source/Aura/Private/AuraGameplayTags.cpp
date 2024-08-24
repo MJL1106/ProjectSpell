@@ -201,6 +201,11 @@ FString("Right Hand Attack")
 FString("Left Hand Attack")
 );
 
+	GameplayTags.CombatSocket_Tail = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("CombatSocket.Tail"),
+FString("Tail Attack")
+);
+
 	/* Montage Tags */
 	
 	GameplayTags.Montage_Attack_1 = UGameplayTagsManager::Get().AddNativeGameplayTag(
