@@ -191,9 +191,16 @@ FString("Summon Ability tag")
 
 	GameplayTags.Abilities_Fire_FireBolt = UGameplayTagsManager::Get().AddNativeGameplayTag(
 	FName("Abilities.Fire.FireBolt"),
-FString("Firebolt Ability tag")
+FString("FireBolt Ability tag")
 );
 
+	/* Cooldowns*/
+
+	GameplayTags.Cooldown_Fire_FireBolt = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Cooldown.Fire.FireBolt"),
+	FString("FireBolt Cooldown tag")
+	);
+	
 	/* Combat Sockets */
 	
 	GameplayTags.CombatSocket_Weapon = UGameplayTagsManager::Get().AddNativeGameplayTag(
