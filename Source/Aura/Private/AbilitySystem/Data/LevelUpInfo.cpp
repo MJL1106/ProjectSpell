@@ -9,14 +9,15 @@ int32 ULevelUpInfo::FindLevelForXP(int32 XP) const
 	bool bSearching = true;
 	while (bSearching)
 	{
-		// LevelUpInfo[1] = Level 1 Information
-		// LevelUpInfo[2] = Level 2 Information
-		if (LevelUpInfo.Num() - 1 <= Level)
+		// LevelUpInformation[0] is a placeholder in the array, Player can't be level '0'
+		// LevelUpInformation[1] = Level 1 Information
+		// LevelUpInformation[2] = Level 2 Information
+		if (LevelUpInformation.Num() - 1 <= Level)
 		{
 			return Level;
 		}
 		
-		if (XP >= LevelUpInfo[Level].LevelUpRequirement)
+		if (XP >= LevelUpInformation[Level].LevelUpRequirement)
 		{
 			Level++;
 		}
