@@ -109,7 +109,7 @@ void UAuraAbilitySystemLibrary::GiveStartupAbilities(const UObject* WorldContext
 	}
 }
 
-int32 UAuraAbilitySystemLibrary::GetXPRewardForClassaAndLevel(const UObject* WorldContextObject,
+int32 UAuraAbilitySystemLibrary::GetXPRewardForClassAndLevel(const UObject* WorldContextObject,
 	ECharacterClass CharacterClass, int32 CharacterLevel)
 {
 	UCharacterClassInfo* CharacterClassInfo = GetCharacterClassInfo(WorldContextObject);
@@ -123,10 +123,18 @@ int32 UAuraAbilitySystemLibrary::GetXPRewardForClassaAndLevel(const UObject* Wor
 
 UCharacterClassInfo* UAuraAbilitySystemLibrary::GetCharacterClassInfo(const UObject* WorldContextObject)
 {
-	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
+	const AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
 	if (AuraGameMode == nullptr) return nullptr;
 
 	return AuraGameMode->CharacterClassInfo;
+}
+
+UAbilityInfo* UAuraAbilitySystemLibrary::GetAbilityInfo(const UObject* WorldContextObject)
+{
+	const AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
+	if (AuraGameMode == nullptr) return nullptr;
+
+	return AuraGameMode->AbilityInfo;
 }
 
 bool UAuraAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle)

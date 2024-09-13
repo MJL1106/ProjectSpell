@@ -7,6 +7,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "AuraAbilitySystemLibrary.generated.h"
 
+class UAbilityInfo;
 class AAuraHUD;
 class USpellMenuWidgetController;
 class UAbilitySystemComponent;
@@ -43,6 +44,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|CharacterClassDefaults")
 	static UCharacterClassInfo* GetCharacterClassInfo(const UObject* WorldContextObject);
 
+	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|CharacterClassDefaults")
+	static UAbilityInfo* GetAbilityInfo(const UObject* WorldContextObject);
+
 	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|GameplayEffects")
 	static bool IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle);
 
@@ -61,5 +65,5 @@ public:
 	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|Gameplaymechanics")
 	static bool IsNotFriend(AActor* FirstActor, AActor* SecondActor);
 
-	static int32 GetXPRewardForClassaAndLevel(const UObject* WorldContextObject, ECharacterClass CharacterClass, int32 CharacterLevel);
+	static int32 GetXPRewardForClassAndLevel(const UObject* WorldContextObject, ECharacterClass CharacterClass, int32 CharacterLevel);
 };
