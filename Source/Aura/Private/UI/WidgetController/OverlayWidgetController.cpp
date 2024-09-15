@@ -27,6 +27,7 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 	{
 		OnPlayerLevelChangedDelegate.Broadcast(NewLevel);
 	});
+
 	
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
 		GetAuraAS()->GetHealthAttribute()).AddLambda(

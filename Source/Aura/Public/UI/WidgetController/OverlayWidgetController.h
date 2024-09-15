@@ -62,9 +62,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Messages")
 	FMessageWidgetRowSignature MessageWidgetRow;
-
-
-
+	
 	UPROPERTY(BlueprintAssignable, Category = "GAS|XP")
 	FOnAttributeChangedSignature OnXPPercentChangedDelegate;
 
