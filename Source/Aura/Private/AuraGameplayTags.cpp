@@ -257,7 +257,7 @@ FString("Type Offensive")
 );
 
 	GameplayTags.Abilities_Type_Passive = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Abilities.Type.None"),
+FName("Abilities.Type.Passive"),
 FString("Type Passive")
 );
 
