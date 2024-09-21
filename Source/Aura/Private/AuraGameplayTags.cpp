@@ -202,6 +202,26 @@ FString("Debuff for arcane damage")
 FString("Debuff for physical damage")
 );
 
+	GameplayTags.Debuff_Chance = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Debuff.Chance"),
+FString("Chance of a Debuff")
+);
+
+	GameplayTags.Debuff_Damage = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Debuff.Damage"),
+FString("Debuff Damage")
+);
+	
+	GameplayTags.Debuff_Duration = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Debuff.Duration"),
+FString("Debuff Duration")
+);
+
+	GameplayTags.Debuff_Frequency = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Debuff.Frequency"),
+FString("Debuff Freqeuncy")
+);
+
 	/* Map of Damage types to Resistances */
 
 	GameplayTags.DamageTypesToResistances.Add(GameplayTags.Damage_Fire, GameplayTags.Attributes_Resistance_Fire);
