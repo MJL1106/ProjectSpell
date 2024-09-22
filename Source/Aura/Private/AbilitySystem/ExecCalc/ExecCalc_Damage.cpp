@@ -84,7 +84,6 @@ void UExecCalc_Damage::DetermineDebuff(const FGameplayEffectCustomExecutionParam
 			const bool bDebuff = FMath::RandRange(1, 100) < EffectiveDebuffChance;
 			if (bDebuff)
 			{
-				// TBD
 				FGameplayEffectContextHandle ContextHandle = Spec.GetContext();
 
 				UAuraAbilitySystemLibrary::SetIsSuccessfulDebuff(ContextHandle, true);

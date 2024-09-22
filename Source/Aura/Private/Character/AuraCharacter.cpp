@@ -2,7 +2,6 @@
 
 
 #include "Character/AuraCharacter.h"
-#include "Character/AuraCharacter.h"
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
@@ -167,6 +166,7 @@ void AAuraCharacter::InitAbilityActorInfo()
 	Cast<UAuraAbilitySystemComponent>(AuraPlayerState->GetAbilitySystemComponent())->AbilityActorInfoSet();
 	AbilitySystemComponent = AuraPlayerState->GetAbilitySystemComponent();
 	AttributeSet = AuraPlayerState->GetAttributeSet();
+	OnAscRegistered.Broadcast(AbilitySystemComponent);
 	
 	if (AAuraPlayerController* AuraPlayerController = Cast<AAuraPlayerController>(GetController()))
 	{

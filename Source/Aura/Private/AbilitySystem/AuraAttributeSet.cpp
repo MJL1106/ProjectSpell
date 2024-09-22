@@ -211,8 +211,6 @@ void UAuraAttributeSet::Debuff(const FEffectProperties& Props)
 	Effect->Period = DebuffFrequency;
 	Effect->DurationMagnitude = FScalableFloat(DebuffDuration);
 
-	Effect->InheritableOwnedTagsContainer.AddTag(GameplayTags.DamageTypesToDebuffs[DamageType]);
-
 	Effect->StackingType = EGameplayEffectStackingType::AggregateBySource;
 	Effect->StackLimitCount = 1;
 
@@ -223,10 +221,14 @@ void UAuraAttributeSet::Debuff(const FEffectProperties& Props)
 	ModifierInfo.ModifierMagnitude = FScalableFloat(DebuffDamage);
 	ModifierInfo.ModifierOp = EGameplayModOp::Additive;
 	ModifierInfo.Attribute = UAuraAttributeSet::GetIncomingDamageAttribute();
-
+	
+	FGameplayTag DamageTag = GameplayTags.DamageTypesToDebuffs[DamageType];
+	
 	FGameplayEffectSpec* MutableSpec = new FGameplayEffectSpec(Effect, EffectContext, 1.f);
 	if (MutableSpec)
 	{
+		MutableSpec->DynamicGrantedTags.AddTag(DamageTag);
+		
 		FAuraGameplayEffectContext* AuraContext = static_cast<FAuraGameplayEffectContext*>(MutableSpec->GetContext().Get());
 		TSharedPtr<FGameplayTag> DebuffDamageType = MakeShareable(new FGameplayTag(DamageType));
 		AuraContext->SetDamageType(DebuffDamageType);
