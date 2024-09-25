@@ -50,6 +50,11 @@ void AAuraCharacterBase::Die(const FVector& DeathImpulse)
 	MulticastHandleDeath(DeathImpulse);
 }
 
+FOnDeathSignature& AAuraCharacterBase::GetOnDeathDelegate()
+{
+	return OnDeathDelegate;
+}
+
 void AAuraCharacterBase::MulticastHandleDeath_Implementation(const FVector& DeathImpulse)
 {
 	UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation(), GetActorRotation());
@@ -70,6 +75,7 @@ void AAuraCharacterBase::MulticastHandleDeath_Implementation(const FVector& Deat
 	Dissolve();
 	bDead = true;
 	BurnDebuffComponent->Deactivate();
+	OnDeathDelegate.Broadcast(this);
 }
 
 void AAuraCharacterBase::BeginPlay()
