@@ -229,12 +229,19 @@ void UAuraAttributeSet::Debuff(const FEffectProperties& Props)
 	ModifierInfo.ModifierOp = EGameplayModOp::Additive;
 	ModifierInfo.Attribute = UAuraAttributeSet::GetIncomingDamageAttribute();
 	
-	FGameplayTag DamageTag = GameplayTags.DamageTypesToDebuffs[DamageType];
+	const FGameplayTag DamageTag = GameplayTags.DamageTypesToDebuffs[DamageType];
 	
 	FGameplayEffectSpec* MutableSpec = new FGameplayEffectSpec(Effect, EffectContext, 1.f);
 	if (MutableSpec)
 	{
 		MutableSpec->DynamicGrantedTags.AddTag(DamageTag);
+		if (DamageTag.MatchesTagExact(GameplayTags.Debuff_Stun))
+		{
+			MutableSpec->DynamicGrantedTags.AddTag(GameplayTags.Player_Block_CursorTrace);
+			MutableSpec->DynamicGrantedTags.AddTag(GameplayTags.Player_Block_InputHeld);
+			MutableSpec->DynamicGrantedTags.AddTag(GameplayTags.Player_Block_InputPressed);
+			MutableSpec->DynamicGrantedTags.AddTag(GameplayTags.Player_Block_InputReleased);
+		}
 		
 		FAuraGameplayEffectContext* AuraContext = static_cast<FAuraGameplayEffectContext*>(MutableSpec->GetContext().Get());
 		TSharedPtr<FGameplayTag> DebuffDamageType = MakeShareable(new FGameplayTag(DamageType));

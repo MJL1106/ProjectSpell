@@ -40,6 +40,9 @@ public:
 	/** Combat Interface */
 	virtual int32 GetPlayerLevel_Implementation() override;
 	/** End Combat Interface */
+
+	virtual void OnRep_Stunned() override;
+	virtual void OnRep_Burned() override;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UNiagaraComponent> LevelUpNiagaraComponent;
