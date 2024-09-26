@@ -177,10 +177,13 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 		}
 		else
 		{
-			FGameplayTagContainer TagContainer;
-			TagContainer.AddTag(FAuraGameplayTags::Get().Effects_HitReact);
-			Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);
-
+			if (Props.TargetCharacter->Implements<UCombatInterface>() && !ICombatInterface::Execute_IsBeingShocked(Props.TargetCharacter))
+			{
+				FGameplayTagContainer TagContainer;
+				TagContainer.AddTag(FAuraGameplayTags::Get().Effects_HitReact);
+				Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);
+			}
+			
 			const FVector& KnockbackForce = UAuraAbilitySystemLibrary::GetKnockbackForce(Props.EffectContextHandle);
 			if (!KnockbackForce.IsNearlyZero(1.f))
 			{
@@ -229,12 +232,19 @@ void UAuraAttributeSet::Debuff(const FEffectProperties& Props)
 	ModifierInfo.ModifierOp = EGameplayModOp::Additive;
 	ModifierInfo.Attribute = UAuraAttributeSet::GetIncomingDamageAttribute();
 	
-	FGameplayTag DamageTag = GameplayTags.DamageTypesToDebuffs[DamageType];
+	const FGameplayTag DamageTag = GameplayTags.DamageTypesToDebuffs[DamageType];
 	
 	FGameplayEffectSpec* MutableSpec = new FGameplayEffectSpec(Effect, EffectContext, 1.f);
 	if (MutableSpec)
 	{
 		MutableSpec->DynamicGrantedTags.AddTag(DamageTag);
+		if (DamageTag.MatchesTagExact(GameplayTags.Debuff_Stun))
+		{
+			MutableSpec->DynamicGrantedTags.AddTag(GameplayTags.Player_Block_CursorTrace);
+			MutableSpec->DynamicGrantedTags.AddTag(GameplayTags.Player_Block_InputHeld);
+			MutableSpec->DynamicGrantedTags.AddTag(GameplayTags.Player_Block_InputPressed);
+			MutableSpec->DynamicGrantedTags.AddTag(GameplayTags.Player_Block_InputReleased);
+		}
 		
 		FAuraGameplayEffectContext* AuraContext = static_cast<FAuraGameplayEffectContext*>(MutableSpec->GetContext().Get());
 		TSharedPtr<FGameplayTag> DebuffDamageType = MakeShareable(new FGameplayTag(DamageType));

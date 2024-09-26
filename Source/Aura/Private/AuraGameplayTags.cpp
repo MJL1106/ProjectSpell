@@ -187,40 +187,40 @@ FString("Resistance to Physical damage")
 FString("Debuff for fire damage")
 	);
 	
-	GameplayTags.Debuff_Stun = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("Debuff.Stun"),
-FString("Debuff for lightning damage")
-);
+		GameplayTags.Debuff_Stun = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Debuff.Stun"),
+	FString("Debuff for lightning damage")
+	);
 
-	GameplayTags.Debuff_Arcane = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("Debuff.Arcane"),
-FString("Debuff for arcane damage")
-);
+		GameplayTags.Debuff_Arcane = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Debuff.Arcane"),
+	FString("Debuff for arcane damage")
+	);
 
-	GameplayTags.Debuff_Physical = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("Debuff.Physical"),
-FString("Debuff for physical damage")
-);
+		GameplayTags.Debuff_Physical = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Debuff.Physical"),
+	FString("Debuff for physical damage")
+	);
 
-	GameplayTags.Debuff_Chance = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Debuff.Chance"),
-FString("Chance of a Debuff")
-);
+		GameplayTags.Debuff_Chance = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Debuff.Chance"),
+	FString("Chance of a Debuff")
+	);
 
-	GameplayTags.Debuff_Damage = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Debuff.Damage"),
-FString("Debuff Damage")
-);
-	
-	GameplayTags.Debuff_Duration = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Debuff.Duration"),
-FString("Debuff Duration")
-);
+		GameplayTags.Debuff_Damage = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Debuff.Damage"),
+	FString("Debuff Damage")
+	);
+		
+		GameplayTags.Debuff_Duration = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Debuff.Duration"),
+	FString("Debuff Duration")
+	);
 
-	GameplayTags.Debuff_Frequency = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Debuff.Frequency"),
-FString("Debuff Freqeuncy")
-);
+		GameplayTags.Debuff_Frequency = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Debuff.Frequency"),
+	FString("Debuff Freqeuncy")
+	);
 
 	/* Map of Damage types to Resistances */
 
@@ -359,5 +359,27 @@ FString("Attack 3")
 	GameplayTags.Montage_Attack_4 = UGameplayTagsManager::Get().AddNativeGameplayTag(
 FName("Montage.Attack.4"),
 FString("Attack 4")
+);
+
+	/* Player Tags*/
+
+	GameplayTags.Player_Block_CursorTrace = UGameplayTagsManager::Get().AddNativeGameplayTag(
+  FName("Player.Block.CursorTrace"),
+  FString("Block tracing under the cursor")
+  );
+
+	GameplayTags.Player_Block_InputHeld = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Player.Block.InputHeld"),
+FString("Block input held callback")
+);
+
+	GameplayTags.Player_Block_InputPressed = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Player.Block.InputPressed"),
+FString("Block input pressed callback")
+);
+
+	GameplayTags.Player_Block_InputReleased = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Player.Block.InputReleased"),
+FString("Block input released callback")
 );
 }
