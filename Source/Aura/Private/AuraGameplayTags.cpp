@@ -411,4 +411,10 @@ FString("Block input pressed callback")
 FName("Player.Block.InputReleased"),
 FString("Block input released callback")
 );
+
+	/* GameplayCues */
+	GameplayTags.GameplayCue_FireBlast = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("GameplayCue.FireBlast"),
+FString("Fire Blast GameplayCue Tag")
+);
 }
