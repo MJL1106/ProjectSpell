@@ -56,9 +56,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<USpringArmComponent> CameraBoom;
 
+protected:
+
+	void LoadProgress();
+
 private:
-
-
 	
 	virtual void InitAbilityActorInfo() override;
 
