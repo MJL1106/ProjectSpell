@@ -38,7 +38,7 @@ struct FSavedAbility
 	FGameplayTag AbilityType = FGameplayTag();
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	int32 AbilityLevel;
+	int32 AbilityLevel = 1;
 };
 
 USTRUCT()
@@ -101,6 +101,9 @@ public:
 	
 	UPROPERTY()
 	FString MapName = FString("Default Map Name");
+	
+	UPROPERTY()
+	FString MapAssetName = FString("Default Map Asset Name");
 
 	UPROPERTY()
 	FName PlayerStartTag;

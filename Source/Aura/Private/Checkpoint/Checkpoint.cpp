@@ -22,6 +22,12 @@ ACheckpoint::ACheckpoint(const FObjectInitializer& ObjectInitializer) : Super(Ob
 	CheckpointMesh->SetupAttachment(GetRootComponent());
 	CheckpointMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	CheckpointMesh->SetCollisionResponseToAllChannels(ECR_Block);
+
+	CheckpointMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_TAN);
+	CheckpointMesh->MarkRenderStateDirty();
+
+	MoveToComponent = CreateDefaultSubobject<USceneComponent>("MoveToComponent");
+	MoveToComponent->SetupAttachment(GetRootComponent());
 }
 
 void ACheckpoint::LoadActor_Implementation()
@@ -30,6 +36,24 @@ void ACheckpoint::LoadActor_Implementation()
 	{
 		HandleGlowEffects();
 	}
+}
+
+void ACheckpoint::SetMoveToLocation_Implementation(FVector& OutDestination)
+{
+	OutDestination = MoveToComponent->GetComponentLocation();
+}
+
+void ACheckpoint::HighlightActor_Implementation()
+{
+	if (!bReached)
+	{
+		CheckpointMesh->SetRenderCustomDepth(true);
+	}
+}
+
+void ACheckpoint::UnHighlightActor_Implementation()
+{
+	CheckpointMesh->SetRenderCustomDepth(false);
 }
 
 void ACheckpoint::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
@@ -41,7 +65,11 @@ void ACheckpoint::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 
 		if (AAuraGameModeBase* AuraGM = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this)))
 		{
-			AuraGM->SaveWorldState(GetWorld());
+			const UWorld* World = GetWorld();
+			FString MapName = World->GetMapName();
+			MapName.RemoveFromStart(World->StreamingLevelsPrefix);
+			
+			AuraGM->SaveWorldState(GetWorld(), MapName);
 		}
 		
 		IPlayerInterface::Execute_SaveProgress(OtherActor, PlayerStartTag);
@@ -53,7 +81,10 @@ void ACheckpoint::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Sphere->OnComponentBeginOverlap.AddDynamic(this, &ACheckpoint::OnSphereOverlap);
+	if (bBindOverlapCallback)
+	{
+		Sphere->OnComponentBeginOverlap.AddDynamic(this, &ACheckpoint::OnSphereOverlap);
+	}
 }
 
 void ACheckpoint::HandleGlowEffects()
