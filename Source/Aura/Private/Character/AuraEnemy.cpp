@@ -83,6 +83,7 @@ void AAuraEnemy::Die(const FVector& DeathImpulse)
 	{
 		AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), true);
 	}
+	SpawnLoot();
 	Super::Die(DeathImpulse);
 }
 
