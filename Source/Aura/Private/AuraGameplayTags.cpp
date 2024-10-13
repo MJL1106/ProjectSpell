@@ -270,6 +270,11 @@ FString("FireBolt Ability tag")
 FName("Abilities.Fire.FireBlast"),
 FString("Fire Blast Ability tag")
 );
+
+	GameplayTags.Abilities_Fire_FireTornado = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Abilities.Fire.FireTornado"),
+FString("Fire Tornado Ability tag")
+);
 	
 	GameplayTags.Abilities_Lightning_Electrocute = UGameplayTagsManager::Get().AddNativeGameplayTag(
 FName("Abilities.Lightning.Electrocute"),
