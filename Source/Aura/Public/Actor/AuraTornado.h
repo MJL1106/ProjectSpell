@@ -13,5 +13,12 @@ UCLASS()
 class AURA_API AAuraTornado : public AAuraProjectile
 {
 	GENERATED_BODY()
+
+public:
+	AAuraTornado();
+
+protected:
+
+	virtual void OnHit() override;
 	
 };
