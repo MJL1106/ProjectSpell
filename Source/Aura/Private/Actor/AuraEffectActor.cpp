@@ -16,6 +16,7 @@ AAuraEffectActor::AAuraEffectActor()
 void AAuraEffectActor::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	
 	RunningTime+=DeltaSeconds;
 	const float SinePeriod = 2 * PI / SinePeriodConstant;
 	if (RunningTime > SinePeriod)
