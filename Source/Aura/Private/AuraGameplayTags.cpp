@@ -281,6 +281,11 @@ FName("Abilities.Lightning.Electrocute"),
 FString("Electrocute Ability tag")
 );
 
+	GameplayTags.Abilities_Lightning_ThunderStrike = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Abilities.Lightning.ThunderStrike"),
+FString("Thunder Strike Ability tag")
+);
+
 	GameplayTags.Abilities_Arcane_ArcaneShards = UGameplayTagsManager::Get().AddNativeGameplayTag(
 FName("Abilities.Arcane.ArcaneShards"),
 FString("ArcaneShards Ability tag")
