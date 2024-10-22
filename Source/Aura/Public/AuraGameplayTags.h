@@ -84,7 +84,11 @@ public:
 	FGameplayTag Abilities_Fire_FireBolt;
 	FGameplayTag Abilities_Fire_FireBlast;
 	FGameplayTag Abilities_Fire_FireTornado;
+	
 	FGameplayTag Abilities_Lightning_Electrocute;
+	FGameplayTag Abilities_Lightning_ThunderStrike;
+
+	
 	FGameplayTag Abilities_Arcane_ArcaneShards;
 
 	FGameplayTag Abilities_Passive_HaloOfProtection;
