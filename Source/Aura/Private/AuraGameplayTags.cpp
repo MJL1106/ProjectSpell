@@ -286,6 +286,11 @@ FName("Abilities.Lightning.ThunderStrike"),
 FString("Thunder Strike Ability tag")
 );
 
+	GameplayTags.Abilities_Lightning_Shockwave = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Abilities.Lightning.Shockwave"),
+FString("Shockwave Ability tag")
+);
+
 	GameplayTags.Abilities_Arcane_ArcaneShards = UGameplayTagsManager::Get().AddNativeGameplayTag(
 FName("Abilities.Arcane.ArcaneShards"),
 FString("ArcaneShards Ability tag")
