@@ -87,6 +87,7 @@ public:
 	
 	FGameplayTag Abilities_Lightning_Electrocute;
 	FGameplayTag Abilities_Lightning_ThunderStrike;
+	FGameplayTag Abilities_Lightning_Shockwave;
 
 	
 	FGameplayTag Abilities_Arcane_ArcaneShards;
