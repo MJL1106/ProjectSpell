@@ -91,6 +91,7 @@ public:
 
 	
 	FGameplayTag Abilities_Arcane_ArcaneShards;
+	FGameplayTag Abilities_Arcane_ArcaneVortex;
 
 	FGameplayTag Abilities_Passive_HaloOfProtection;
 	FGameplayTag Abilities_Passive_LifeSiphon;
