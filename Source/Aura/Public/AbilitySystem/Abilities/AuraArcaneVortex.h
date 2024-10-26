@@ -13,5 +13,11 @@ UCLASS()
 class AURA_API UAuraArcaneVortex : public UAuraDamageGameplayAbility
 {
 	GENERATED_BODY()
+public:
 	
+	UFUNCTION(BlueprintCallable, Category = "Ability")
+	void PullActorTowardsLocation(AActor* ActorToPull, const FVector& TargetLocation, float PullSpeed);
+
+	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = true))
+	FDamageEffectParams DamageEffectParams;
 };
