@@ -296,6 +296,11 @@ FName("Abilities.Arcane.ArcaneShards"),
 FString("ArcaneShards Ability tag")
 );
 
+	GameplayTags.Abilities_Arcane_ArcaneVortex = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Abilities.Arcane.ArcaneVortex"),
+FString("ArcaneVortex Ability tag")
+);
+
 	/* Passive Spells */
 
 	GameplayTags.Abilities_Passive_LifeSiphon = UGameplayTagsManager::Get().AddNativeGameplayTag(
