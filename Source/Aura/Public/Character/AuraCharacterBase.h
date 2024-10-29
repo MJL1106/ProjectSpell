@@ -39,6 +39,7 @@ public:
 	/** Combat Interface */
 	virtual UAnimMontage* GetHitReactMontage_Implementation() override;
 	virtual void Die(const FVector& DeathImpulse) override;
+	virtual void SiphonHealth(AActor* SourceAvatar, AActor* TargetAvatar) override;
 	virtual FOnDeathSignature& GetOnDeathDelegate() override;
 	virtual FVector GetCombatSocketLocation_Implementation(const FGameplayTag& MontageTag) override;
 	virtual bool IsDead_Implementation() const override;
@@ -71,6 +72,16 @@ public:
 	
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	bool bIsBeingShocked = false;
+
+
+	/* Passive Ability Info*/
+	UPROPERTY(EditAnywhere, Category = "PassiveAbilities|LifeSiphon")
+	UCurveFloat* LifeSiphonCurve;
+
+	UPROPERTY(EditDefaultsOnly, Category = "PassiveAbilities|LifeSiphon")
+	TSubclassOf<UGameplayEffect> LifeSiphonGameplayEffect;
+
+	/* End Passive Ability Info */
 
 	UFUNCTION()
 	virtual void OnRep_Stunned();

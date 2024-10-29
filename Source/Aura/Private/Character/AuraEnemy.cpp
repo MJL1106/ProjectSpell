@@ -10,11 +10,14 @@
 #include "Components/WidgetComponent.h"
 #include "UI/Widget/AuraUserWidget.h"
 #include "AuraGameplayTags.h"
+#include "AbilitySystem/Abilities/AuraPassiveAbility.h"
 #include "AI/AuraAIController.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+
+class UAuraPassiveAbility;
 
 AAuraEnemy::AAuraEnemy()
 {

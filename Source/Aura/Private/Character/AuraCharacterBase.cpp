@@ -5,11 +5,14 @@
 #include "AbilitySystemComponent.h"
 #include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "AbilitySystem/AuraAbilitySystemLibrary.h"
+#include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "AbilitySystem/Passive/PassiveNiagaraComponent.h"
 #include "Aura/Aura.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Interaction/EnemyInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
@@ -90,6 +93,40 @@ void AAuraCharacterBase::Die(const FVector& DeathImpulse)
 {
 	Weapon->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
 	MulticastHandleDeath(DeathImpulse);
+}
+
+void AAuraCharacterBase::SiphonHealth(AActor* SourceAvatar, AActor* TargetAvatar)
+{
+   if (TargetAvatar->GetClass()->ImplementsInterface(UEnemyInterface::StaticClass()))
+   {
+	   if (const AAuraCharacterBase* AuraSourceCharacter = Cast<AAuraCharacterBase>(SourceAvatar))
+	   {
+            if (UAuraAbilitySystemComponent* SourceASC = Cast<UAuraAbilitySystemComponent>(AuraSourceCharacter->GetAbilitySystemComponent()))
+            {
+            	if (SourceASC->GetStatusFromAbilityTag(FAuraGameplayTags::Get().Abilities_Passive_LifeSiphon) == FAuraGameplayTags::Get().Abilities_Status_Equipped)
+            	{
+            		if (AAuraCharacterBase* EnemyCharacter = Cast<AAuraCharacterBase>(TargetAvatar))
+            		{
+            			if (const UAuraAttributeSet* EnemyAttributes = Cast<UAuraAttributeSet>(EnemyCharacter->GetAttributeSet()))
+            			{
+            				const float EnemyMaxHealth = EnemyAttributes->GetMaxHealth();
+            				
+            				const int32 LifeSiphonLevel = UAuraAbilitySystemLibrary::GetAbilityLevelByTag(SourceASC, FGameplayTag::RequestGameplayTag("Abilities.Passive.LifeSiphon"));
+            				const float SiphonPercentage = LifeSiphonCurve->GetFloatValue(LifeSiphonLevel);
+            				const float SiphonAmount = SiphonPercentage * EnemyMaxHealth;
+            				
+            				FGameplayEffectSpecHandle SiphonSpecHandle = SourceASC->MakeOutgoingSpec(LifeSiphonGameplayEffect, LifeSiphonLevel, SourceASC->MakeEffectContext());
+            				if (SiphonSpecHandle.IsValid())
+            				{
+            					SiphonSpecHandle.Data->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag("Event.Data.HealthAmount"), SiphonAmount);
+            					SourceASC->ApplyGameplayEffectSpecToSelf(*SiphonSpecHandle.Data);
+            				}
+            			}
+            		}
+            	}
+            }
+        }
+    }
 }
 
 FOnDeathSignature& AAuraCharacterBase::GetOnDeathDelegate()

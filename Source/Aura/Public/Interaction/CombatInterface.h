@@ -8,6 +8,7 @@
 #include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "CombatInterface.generated.h"
 
+class UAuraAttributeSet;
 class UAbilitySystemComponent;
 class UNiagaraSystem;
 class UAnimMontage;
@@ -66,6 +67,7 @@ public:
 	virtual void Die(const FVector& DeathImpulse) = 0;
 	virtual FOnDeathSignature& GetOnDeathDelegate() = 0;
 	virtual FOnDamageSignature& GetOnDamageSignature() = 0;
+	virtual void SiphonHealth(AActor* SourceAvatar, AActor* TargetAvatar) = 0;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	bool IsDead() const;

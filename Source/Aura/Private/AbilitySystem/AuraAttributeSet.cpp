@@ -172,6 +172,11 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 			if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.TargetAvatarActor))
 			{
 				CombatInterface->Die(UAuraAbilitySystemLibrary::GetDeathImpulse(Props.EffectContextHandle));
+
+				if (ICombatInterface* SourceCombatInterface = Cast<ICombatInterface>(Props.SourceAvatarActor))
+				{
+					SourceCombatInterface->SiphonHealth(Props.SourceAvatarActor, Props.TargetAvatarActor);
+				}
 			}
 			SendXPEvent(Props);
 		}
