@@ -95,12 +95,7 @@ void AAuraCharacterBase::Die(const FVector& DeathImpulse)
 	MulticastHandleDeath(DeathImpulse);
 }
 
-void AAuraCharacterBase::SiphonAttribute(
-    AActor* SourceAvatar, 
-    AActor* TargetAvatar,
-    const FGameplayTag& AbilityTag,
-    const FGameplayTag& DataEventTag
-)
+void AAuraCharacterBase::SiphonAttribute(AActor* SourceAvatar, AActor* TargetAvatar,const FGameplayTag& AbilityTag, const FGameplayTag& DataEventTag)
 {
 	if (const AAuraCharacterBase* AuraSourceCharacter = Cast<AAuraCharacterBase>(SourceAvatar))
 	{
@@ -147,6 +142,42 @@ void AAuraCharacterBase::SiphonAttribute(
 			}
 		}
 	}
+}
+
+bool AAuraCharacterBase::IsSuccessfulHaloProtection(AActor* TargetAvatar)
+{
+	const FGameplayTag AbilityTag = FAuraGameplayTags::Get().Abilities_Passive_HaloOfProtection;
+	
+	if (const AAuraCharacterBase* AuraTargetCharacter = Cast<AAuraCharacterBase>(TargetAvatar))
+	{
+		if (UAuraAbilitySystemComponent* TargetASC = Cast<UAuraAbilitySystemComponent>(AuraTargetCharacter->GetAbilitySystemComponent()))
+		{
+			if (TargetASC->GetStatusFromAbilityTag(AbilityTag) == FAuraGameplayTags::Get().Abilities_Status_Equipped)
+			{
+				const int32 AbilityLevel = UAuraAbilitySystemLibrary::GetAbilityLevelByTag(TargetASC, AbilityTag);
+				const float ActivationChance = HaloOfProtectionCurve->GetFloatValue(AbilityLevel);
+				
+				if (FMath::RandRange(1, 100) < ActivationChance * 100)
+				{
+					if (const UAuraAttributeSet* TargetAttributes = Cast<UAuraAttributeSet>(AuraTargetCharacter->GetAttributeSet()))
+					{
+						const float PlayerMaxHealth = TargetAttributes->GetMaxHealth();
+						const float SiphonAmount = ActivationChance * PlayerMaxHealth;
+
+						FGameplayEffectSpecHandle SiphonSpecHandle = TargetASC->MakeOutgoingSpec(LifeSiphonGameplayEffect, AbilityLevel, TargetASC->MakeEffectContext());
+						if (SiphonSpecHandle.IsValid())
+						{
+							SiphonSpecHandle.Data->SetSetByCallerMagnitude(FAuraGameplayTags::Get().Event_Data_HealthAmount, SiphonAmount);
+							TargetASC->ApplyGameplayEffectSpecToSelf(*SiphonSpecHandle.Data);
+							UGameplayStatics::PlaySoundAtLocation(this, HaloProtectionSuccessfulSound, GetActorLocation());
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+	return false;
 }
 
 FOnDeathSignature& AAuraCharacterBase::GetOnDeathDelegate()

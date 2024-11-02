@@ -39,8 +39,8 @@ public:
 	/** Combat Interface */
 	virtual UAnimMontage* GetHitReactMontage_Implementation() override;
 	virtual void Die(const FVector& DeathImpulse) override;
-	virtual void SiphonAttribute(AActor* SourceAvatar, AActor* TargetAvatar, const FGameplayTag& AbilityTag,
-	const FGameplayTag& DataEventTag) override;
+	virtual void SiphonAttribute(AActor* SourceAvatar, AActor* TargetAvatar, const FGameplayTag& AbilityTag, const FGameplayTag& DataEventTag) override;
+	virtual bool IsSuccessfulHaloProtection(AActor* TargetAvatar) override;
 	virtual FOnDeathSignature& GetOnDeathDelegate() override;
 	virtual FVector GetCombatSocketLocation_Implementation(const FGameplayTag& MontageTag) override;
 	virtual bool IsDead_Implementation() const override;
@@ -88,6 +88,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "PassiveAbilities|ManaSiphon")
 	TSubclassOf<UGameplayEffect> ManaSiphonGameplayEffect;
 
+	UPROPERTY(EditAnywhere, Category = "PassiveAbilities|HaloOfProtection")
+	UCurveFloat* HaloOfProtectionCurve;
+
+	UPROPERTY(EditAnywhere, Category = "PassiveAbilities|HaloOfProtection")
+	USoundBase* HaloProtectionSuccessfulSound;
+	
 	/* End Passive Ability Info */
 
 	UFUNCTION()

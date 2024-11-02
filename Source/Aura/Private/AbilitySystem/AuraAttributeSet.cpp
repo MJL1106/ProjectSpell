@@ -173,12 +173,15 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 		{
 			if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.TargetAvatarActor))
 			{
-				CombatInterface->Die(UAuraAbilitySystemLibrary::GetDeathImpulse(Props.EffectContextHandle));
-
-				if (ICombatInterface* SourceCombatInterface = Cast<ICombatInterface>(Props.SourceAvatarActor))
+				if (!CombatInterface->IsSuccessfulHaloProtection(Props.TargetAvatarActor))
 				{
-					SourceCombatInterface->SiphonAttribute(Props.SourceAvatarActor, Props.TargetAvatarActor, GameplayTags.Abilities_Passive_LifeSiphon, GameplayTags.Event_Data_HealthAmount);
-					SourceCombatInterface->SiphonAttribute(Props.SourceAvatarActor, Props.TargetAvatarActor, GameplayTags.Abilities_Passive_ManaSiphon, GameplayTags.Event_Data_ManaAmount);
+					CombatInterface->Die(UAuraAbilitySystemLibrary::GetDeathImpulse(Props.EffectContextHandle));
+
+					if (ICombatInterface* SourceCombatInterface = Cast<ICombatInterface>(Props.SourceAvatarActor))
+					{
+						SourceCombatInterface->SiphonAttribute(Props.SourceAvatarActor, Props.TargetAvatarActor, GameplayTags.Abilities_Passive_LifeSiphon, GameplayTags.Event_Data_HealthAmount);
+						SourceCombatInterface->SiphonAttribute(Props.SourceAvatarActor, Props.TargetAvatarActor, GameplayTags.Abilities_Passive_ManaSiphon, GameplayTags.Event_Data_ManaAmount);
+					}
 				}
 			}
 			SendXPEvent(Props);

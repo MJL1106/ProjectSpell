@@ -67,8 +67,8 @@ public:
 	virtual void Die(const FVector& DeathImpulse) = 0;
 	virtual FOnDeathSignature& GetOnDeathDelegate() = 0;
 	virtual FOnDamageSignature& GetOnDamageSignature() = 0;
-	virtual void SiphonAttribute(AActor* SourceAvatar, AActor* TargetAvatar, const FGameplayTag& AbilityTag,
-	const FGameplayTag& DataEventTag) = 0;
+	virtual void SiphonAttribute(AActor* SourceAvatar, AActor* TargetAvatar, const FGameplayTag& AbilityTag, const FGameplayTag& DataEventTag) = 0;
+	virtual bool IsSuccessfulHaloProtection(AActor* TargetAvatar) = 0;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	bool IsDead() const;
