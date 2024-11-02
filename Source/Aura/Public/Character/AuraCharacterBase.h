@@ -39,7 +39,8 @@ public:
 	/** Combat Interface */
 	virtual UAnimMontage* GetHitReactMontage_Implementation() override;
 	virtual void Die(const FVector& DeathImpulse) override;
-	virtual void SiphonHealth(AActor* SourceAvatar, AActor* TargetAvatar) override;
+	virtual void SiphonAttribute(AActor* SourceAvatar, AActor* TargetAvatar, const FGameplayTag& AbilityTag,
+	const FGameplayTag& DataEventTag) override;
 	virtual FOnDeathSignature& GetOnDeathDelegate() override;
 	virtual FVector GetCombatSocketLocation_Implementation(const FGameplayTag& MontageTag) override;
 	virtual bool IsDead_Implementation() const override;
@@ -80,6 +81,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "PassiveAbilities|LifeSiphon")
 	TSubclassOf<UGameplayEffect> LifeSiphonGameplayEffect;
+
+	UPROPERTY(EditAnywhere, Category = "PassiveAbilities|ManaSiphon")
+	UCurveFloat* ManaSiphonCurve;
+
+	UPROPERTY(EditDefaultsOnly, Category = "PassiveAbilities|ManaSiphon")
+	TSubclassOf<UGameplayEffect> ManaSiphonGameplayEffect;
 
 	/* End Passive Ability Info */
 

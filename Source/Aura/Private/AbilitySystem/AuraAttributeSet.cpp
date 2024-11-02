@@ -159,6 +159,8 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 {
 	const float LocalIncomingDamage = GetIncomingDamage();
+	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();
+	
 	SetIncomingDamage(0.f);
 
 	if (LocalIncomingDamage > 0)
@@ -175,7 +177,8 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 
 				if (ICombatInterface* SourceCombatInterface = Cast<ICombatInterface>(Props.SourceAvatarActor))
 				{
-					SourceCombatInterface->SiphonHealth(Props.SourceAvatarActor, Props.TargetAvatarActor);
+					SourceCombatInterface->SiphonAttribute(Props.SourceAvatarActor, Props.TargetAvatarActor, GameplayTags.Abilities_Passive_LifeSiphon, GameplayTags.Event_Data_HealthAmount);
+					SourceCombatInterface->SiphonAttribute(Props.SourceAvatarActor, Props.TargetAvatarActor, GameplayTags.Abilities_Passive_ManaSiphon, GameplayTags.Event_Data_ManaAmount);
 				}
 			}
 			SendXPEvent(Props);

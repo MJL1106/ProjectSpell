@@ -97,6 +97,9 @@ public:
 	FGameplayTag Abilities_Passive_LifeSiphon;
 	FGameplayTag Abilities_Passive_ManaSiphon;
 
+	FGameplayTag Event_Data_HealthAmount;
+	FGameplayTag Event_Data_ManaAmount;
+
 	FGameplayTag Cooldown_Fire_FireBolt;
 	
 	FGameplayTag CombatSocket_Weapon;

@@ -95,38 +95,58 @@ void AAuraCharacterBase::Die(const FVector& DeathImpulse)
 	MulticastHandleDeath(DeathImpulse);
 }
 
-void AAuraCharacterBase::SiphonHealth(AActor* SourceAvatar, AActor* TargetAvatar)
+void AAuraCharacterBase::SiphonAttribute(
+    AActor* SourceAvatar, 
+    AActor* TargetAvatar,
+    const FGameplayTag& AbilityTag,
+    const FGameplayTag& DataEventTag
+)
 {
-   if (TargetAvatar->GetClass()->ImplementsInterface(UEnemyInterface::StaticClass()))
-   {
-	   if (const AAuraCharacterBase* AuraSourceCharacter = Cast<AAuraCharacterBase>(SourceAvatar))
-	   {
-            if (UAuraAbilitySystemComponent* SourceASC = Cast<UAuraAbilitySystemComponent>(AuraSourceCharacter->GetAbilitySystemComponent()))
-            {
-            	if (SourceASC->GetStatusFromAbilityTag(FAuraGameplayTags::Get().Abilities_Passive_LifeSiphon) == FAuraGameplayTags::Get().Abilities_Status_Equipped)
-            	{
-            		if (AAuraCharacterBase* EnemyCharacter = Cast<AAuraCharacterBase>(TargetAvatar))
-            		{
-            			if (const UAuraAttributeSet* EnemyAttributes = Cast<UAuraAttributeSet>(EnemyCharacter->GetAttributeSet()))
-            			{
-            				const float EnemyMaxHealth = EnemyAttributes->GetMaxHealth();
-            				
-            				const int32 LifeSiphonLevel = UAuraAbilitySystemLibrary::GetAbilityLevelByTag(SourceASC, FGameplayTag::RequestGameplayTag("Abilities.Passive.LifeSiphon"));
-            				const float SiphonPercentage = LifeSiphonCurve->GetFloatValue(LifeSiphonLevel);
-            				const float SiphonAmount = SiphonPercentage * EnemyMaxHealth;
-            				
-            				FGameplayEffectSpecHandle SiphonSpecHandle = SourceASC->MakeOutgoingSpec(LifeSiphonGameplayEffect, LifeSiphonLevel, SourceASC->MakeEffectContext());
-            				if (SiphonSpecHandle.IsValid())
-            				{
-            					SiphonSpecHandle.Data->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag("Event.Data.HealthAmount"), SiphonAmount);
-            					SourceASC->ApplyGameplayEffectSpecToSelf(*SiphonSpecHandle.Data);
-            				}
-            			}
-            		}
-            	}
-            }
-        }
-    }
+	if (const AAuraCharacterBase* AuraSourceCharacter = Cast<AAuraCharacterBase>(SourceAvatar))
+	{
+		if (UAuraAbilitySystemComponent* SourceASC = Cast<UAuraAbilitySystemComponent>(AuraSourceCharacter->GetAbilitySystemComponent()))
+		{
+			if (SourceASC->GetStatusFromAbilityTag(AbilityTag) == FAuraGameplayTags::Get().Abilities_Status_Equipped)
+			{
+				if (TargetAvatar->GetClass()->ImplementsInterface(UEnemyInterface::StaticClass()))
+				{
+					if (const AAuraCharacterBase* EnemyCharacter = Cast<AAuraCharacterBase>(TargetAvatar))
+					{
+						if (const UAuraAttributeSet* EnemyAttributes = Cast<UAuraAttributeSet>(EnemyCharacter->GetAttributeSet()))
+						{
+							const float EnemyMaxHealth = EnemyAttributes->GetMaxHealth();
+							const int32 AbilityLevel = UAuraAbilitySystemLibrary::GetAbilityLevelByTag(SourceASC, AbilityTag);
+
+							if (AbilityTag == FAuraGameplayTags::Get().Abilities_Passive_LifeSiphon)
+							{
+								const float SiphonPercentage = LifeSiphonCurve->GetFloatValue(AbilityLevel);
+								const float SiphonAmount = SiphonPercentage * EnemyMaxHealth;
+								
+								FGameplayEffectSpecHandle SiphonSpecHandle = SourceASC->MakeOutgoingSpec(LifeSiphonGameplayEffect, AbilityLevel, SourceASC->MakeEffectContext());
+								if (SiphonSpecHandle.IsValid())
+								{
+									SiphonSpecHandle.Data->SetSetByCallerMagnitude(DataEventTag, SiphonAmount);
+									SourceASC->ApplyGameplayEffectSpecToSelf(*SiphonSpecHandle.Data);
+								}
+							}
+							else if (AbilityTag == FAuraGameplayTags::Get().Abilities_Passive_ManaSiphon)
+							{
+								const float SiphonPercentage = ManaSiphonCurve->GetFloatValue(AbilityLevel);
+								const float SiphonAmount = SiphonPercentage * EnemyMaxHealth;
+								
+								FGameplayEffectSpecHandle SiphonSpecHandle = SourceASC->MakeOutgoingSpec(ManaSiphonGameplayEffect, AbilityLevel, SourceASC->MakeEffectContext());
+								if (SiphonSpecHandle.IsValid())
+								{
+									SiphonSpecHandle.Data->SetSetByCallerMagnitude(DataEventTag, SiphonAmount);
+									SourceASC->ApplyGameplayEffectSpecToSelf(*SiphonSpecHandle.Data);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 FOnDeathSignature& AAuraCharacterBase::GetOnDeathDelegate()
