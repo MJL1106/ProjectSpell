@@ -9,6 +9,7 @@
 #include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "AuraCharacterBase.generated.h"
 
+class UNiagaraComponent;
 class UPassiveNiagaraComponent;
 class UNiagaraSystem;
 class UDebuffNiagaraComponent;
@@ -82,17 +83,26 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "PassiveAbilities|LifeSiphon")
 	TSubclassOf<UGameplayEffect> LifeSiphonGameplayEffect;
 
+	UPROPERTY(EditAnywhere, Category = "PassiveAbilities|LifeSiphon")
+	TObjectPtr<UNiagaraComponent> LifeSiphonSuccessNiagaraComponent;
+	
 	UPROPERTY(EditAnywhere, Category = "PassiveAbilities|ManaSiphon")
 	UCurveFloat* ManaSiphonCurve;
 
 	UPROPERTY(EditDefaultsOnly, Category = "PassiveAbilities|ManaSiphon")
 	TSubclassOf<UGameplayEffect> ManaSiphonGameplayEffect;
 
+	UPROPERTY(EditAnywhere, Category = "PassiveAbilities|ManaSiphon")
+	TObjectPtr<UNiagaraComponent> ManaSiphonSuccessNiagaraComponent;
+
 	UPROPERTY(EditAnywhere, Category = "PassiveAbilities|HaloOfProtection")
 	UCurveFloat* HaloOfProtectionCurve;
 
 	UPROPERTY(EditAnywhere, Category = "PassiveAbilities|HaloOfProtection")
 	USoundBase* HaloProtectionSuccessfulSound;
+
+	UPROPERTY(EditAnywhere, Category = "PassiveAbilities|HaloOfProtection")
+	TObjectPtr<UNiagaraComponent> HaloOfProtectionSuccessNiagara;
 	
 	/* End Passive Ability Info */
 

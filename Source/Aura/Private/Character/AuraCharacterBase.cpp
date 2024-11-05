@@ -47,12 +47,20 @@ AAuraCharacterBase::AAuraCharacterBase()
 	HaloOfProtectionNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>("HaloOfProtectionComponent");
 	HaloOfProtectionNiagaraComponent->SetupAttachment(EffectAttachComponent);
 
+	HaloOfProtectionSuccessNiagara = CreateDefaultSubobject<UNiagaraComponent>("HaloOfProtectionSuccessNiagaraComponent");
+	HaloOfProtectionSuccessNiagara->SetupAttachment(EffectAttachComponent);
+
 	LifeSiphonNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>("LifeSiphonNiagaraComponent");
 	LifeSiphonNiagaraComponent->SetupAttachment(EffectAttachComponent);
+
+	LifeSiphonSuccessNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>("LifeSiphonSuccessNiagaraComponent");
+	LifeSiphonSuccessNiagaraComponent->SetupAttachment(EffectAttachComponent);
 
 	ManaSiphonNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>("ManaSiphonNiagaraComponent");
 	ManaSiphonNiagaraComponent->SetupAttachment(EffectAttachComponent);
 
+	ManaSiphonSuccessNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>("ManaSiphonSuccessNiagaraComponent");
+	ManaSiphonSuccessNiagaraComponent->SetupAttachment(EffectAttachComponent);
 }
 
 void AAuraCharacterBase::Tick(float DeltaSeconds)
@@ -122,6 +130,13 @@ void AAuraCharacterBase::SiphonAttribute(AActor* SourceAvatar, AActor* TargetAva
 								{
 									SiphonSpecHandle.Data->SetSetByCallerMagnitude(DataEventTag, SiphonAmount);
 									SourceASC->ApplyGameplayEffectSpecToSelf(*SiphonSpecHandle.Data);
+							
+									LifeSiphonSuccessNiagaraComponent->Activate();
+									FTimerHandle TimerHandle;
+									GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+									{
+										LifeSiphonSuccessNiagaraComponent->Deactivate();
+									}, 1.0f, false);
 								}
 							}
 							else if (AbilityTag == FAuraGameplayTags::Get().Abilities_Passive_ManaSiphon)
@@ -134,6 +149,13 @@ void AAuraCharacterBase::SiphonAttribute(AActor* SourceAvatar, AActor* TargetAva
 								{
 									SiphonSpecHandle.Data->SetSetByCallerMagnitude(DataEventTag, SiphonAmount);
 									SourceASC->ApplyGameplayEffectSpecToSelf(*SiphonSpecHandle.Data);
+							
+									ManaSiphonSuccessNiagaraComponent->Activate();
+									FTimerHandle TimerHandle;
+									GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+									{
+										ManaSiphonSuccessNiagaraComponent->Deactivate();
+									}, 1.0f, false);
 								}
 							}
 						}
@@ -169,7 +191,16 @@ bool AAuraCharacterBase::IsSuccessfulHaloProtection(AActor* TargetAvatar)
 						{
 							SiphonSpecHandle.Data->SetSetByCallerMagnitude(FAuraGameplayTags::Get().Event_Data_HealthAmount, SiphonAmount);
 							TargetASC->ApplyGameplayEffectSpecToSelf(*SiphonSpecHandle.Data);
+							
 							UGameplayStatics::PlaySoundAtLocation(this, HaloProtectionSuccessfulSound, GetActorLocation());
+							
+							HaloOfProtectionSuccessNiagara->Activate();
+							FTimerHandle TimerHandle;
+							GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+							{
+								HaloOfProtectionSuccessNiagara->Deactivate();
+							}, 1.0f, false);
+							
 							return true;
 						}
 					}
