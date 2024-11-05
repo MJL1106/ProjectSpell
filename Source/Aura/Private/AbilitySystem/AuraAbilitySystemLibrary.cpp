@@ -220,6 +220,18 @@ ULootTiers* UAuraAbilitySystemLibrary::GetLootTiers(const UObject* WorldContextO
 	return AuraGameMode->LootTiers;
 }
 
+int32 UAuraAbilitySystemLibrary::GetAbilityLevelByTag(UAbilitySystemComponent* ASC, FGameplayTag AbilityTag)
+{
+	for (const FGameplayAbilitySpec& Spec : ASC->GetActivatableAbilities())
+	{
+		if (Spec.Ability && Spec.Ability->AbilityTags.HasTagExact(AbilityTag))
+		{
+			return Spec.Level;
+		}
+	}
+	return 0;
+}
+
 bool UAuraAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle)
 {
 	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get()))

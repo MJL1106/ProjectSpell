@@ -437,4 +437,16 @@ FString("Block input released callback")
 FName("GameplayCue.FireBlast"),
 FString("Fire Blast GameplayCue Tag")
 );
+
+	/* Data Events */
+
+	GameplayTags.Event_Data_HealthAmount = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Event.Data.HealthAmount"),
+FString("Health amount to gain")
+);
+	
+	GameplayTags.Event_Data_ManaAmount = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Event.Data.ManaAmount"),
+FString("Mana amount to gain")
+);
 }

@@ -88,7 +88,6 @@ public:
 	FGameplayTag Abilities_Lightning_Electrocute;
 	FGameplayTag Abilities_Lightning_ThunderStrike;
 	FGameplayTag Abilities_Lightning_Shockwave;
-
 	
 	FGameplayTag Abilities_Arcane_ArcaneShards;
 	FGameplayTag Abilities_Arcane_ArcaneVortex;
@@ -96,6 +95,9 @@ public:
 	FGameplayTag Abilities_Passive_HaloOfProtection;
 	FGameplayTag Abilities_Passive_LifeSiphon;
 	FGameplayTag Abilities_Passive_ManaSiphon;
+
+	FGameplayTag Event_Data_HealthAmount;
+	FGameplayTag Event_Data_ManaAmount;
 
 	FGameplayTag Cooldown_Fire_FireBolt;
 	

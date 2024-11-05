@@ -5,11 +5,14 @@
 #include "AbilitySystemComponent.h"
 #include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "AbilitySystem/AuraAbilitySystemLibrary.h"
+#include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "AbilitySystem/Passive/PassiveNiagaraComponent.h"
 #include "Aura/Aura.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Interaction/EnemyInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
@@ -44,12 +47,20 @@ AAuraCharacterBase::AAuraCharacterBase()
 	HaloOfProtectionNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>("HaloOfProtectionComponent");
 	HaloOfProtectionNiagaraComponent->SetupAttachment(EffectAttachComponent);
 
+	HaloOfProtectionSuccessNiagara = CreateDefaultSubobject<UNiagaraComponent>("HaloOfProtectionSuccessNiagaraComponent");
+	HaloOfProtectionSuccessNiagara->SetupAttachment(EffectAttachComponent);
+
 	LifeSiphonNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>("LifeSiphonNiagaraComponent");
 	LifeSiphonNiagaraComponent->SetupAttachment(EffectAttachComponent);
+
+	LifeSiphonSuccessNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>("LifeSiphonSuccessNiagaraComponent");
+	LifeSiphonSuccessNiagaraComponent->SetupAttachment(EffectAttachComponent);
 
 	ManaSiphonNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>("ManaSiphonNiagaraComponent");
 	ManaSiphonNiagaraComponent->SetupAttachment(EffectAttachComponent);
 
+	ManaSiphonSuccessNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>("ManaSiphonSuccessNiagaraComponent");
+	ManaSiphonSuccessNiagaraComponent->SetupAttachment(EffectAttachComponent);
 }
 
 void AAuraCharacterBase::Tick(float DeltaSeconds)
@@ -90,6 +101,114 @@ void AAuraCharacterBase::Die(const FVector& DeathImpulse)
 {
 	Weapon->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
 	MulticastHandleDeath(DeathImpulse);
+}
+
+void AAuraCharacterBase::SiphonAttribute(AActor* SourceAvatar, AActor* TargetAvatar,const FGameplayTag& AbilityTag, const FGameplayTag& DataEventTag)
+{
+	if (const AAuraCharacterBase* AuraSourceCharacter = Cast<AAuraCharacterBase>(SourceAvatar))
+	{
+		if (UAuraAbilitySystemComponent* SourceASC = Cast<UAuraAbilitySystemComponent>(AuraSourceCharacter->GetAbilitySystemComponent()))
+		{
+			if (SourceASC->GetStatusFromAbilityTag(AbilityTag) == FAuraGameplayTags::Get().Abilities_Status_Equipped)
+			{
+				if (TargetAvatar->GetClass()->ImplementsInterface(UEnemyInterface::StaticClass()))
+				{
+					if (const AAuraCharacterBase* EnemyCharacter = Cast<AAuraCharacterBase>(TargetAvatar))
+					{
+						if (const UAuraAttributeSet* EnemyAttributes = Cast<UAuraAttributeSet>(EnemyCharacter->GetAttributeSet()))
+						{
+							const float EnemyMaxHealth = EnemyAttributes->GetMaxHealth();
+							const int32 AbilityLevel = UAuraAbilitySystemLibrary::GetAbilityLevelByTag(SourceASC, AbilityTag);
+
+							if (AbilityTag == FAuraGameplayTags::Get().Abilities_Passive_LifeSiphon)
+							{
+								const float SiphonPercentage = LifeSiphonCurve->GetFloatValue(AbilityLevel);
+								const float SiphonAmount = SiphonPercentage * EnemyMaxHealth;
+								
+								FGameplayEffectSpecHandle SiphonSpecHandle = SourceASC->MakeOutgoingSpec(LifeSiphonGameplayEffect, AbilityLevel, SourceASC->MakeEffectContext());
+								if (SiphonSpecHandle.IsValid())
+								{
+									SiphonSpecHandle.Data->SetSetByCallerMagnitude(DataEventTag, SiphonAmount);
+									SourceASC->ApplyGameplayEffectSpecToSelf(*SiphonSpecHandle.Data);
+							
+									LifeSiphonSuccessNiagaraComponent->Activate();
+									FTimerHandle TimerHandle;
+									GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+									{
+										LifeSiphonSuccessNiagaraComponent->Deactivate();
+									}, 1.0f, false);
+								}
+							}
+							else if (AbilityTag == FAuraGameplayTags::Get().Abilities_Passive_ManaSiphon)
+							{
+								const float SiphonPercentage = ManaSiphonCurve->GetFloatValue(AbilityLevel);
+								const float SiphonAmount = SiphonPercentage * EnemyMaxHealth;
+								
+								FGameplayEffectSpecHandle SiphonSpecHandle = SourceASC->MakeOutgoingSpec(ManaSiphonGameplayEffect, AbilityLevel, SourceASC->MakeEffectContext());
+								if (SiphonSpecHandle.IsValid())
+								{
+									SiphonSpecHandle.Data->SetSetByCallerMagnitude(DataEventTag, SiphonAmount);
+									SourceASC->ApplyGameplayEffectSpecToSelf(*SiphonSpecHandle.Data);
+							
+									ManaSiphonSuccessNiagaraComponent->Activate();
+									FTimerHandle TimerHandle;
+									GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+									{
+										ManaSiphonSuccessNiagaraComponent->Deactivate();
+									}, 1.0f, false);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+bool AAuraCharacterBase::IsSuccessfulHaloProtection(AActor* TargetAvatar)
+{
+	const FGameplayTag AbilityTag = FAuraGameplayTags::Get().Abilities_Passive_HaloOfProtection;
+	
+	if (const AAuraCharacterBase* AuraTargetCharacter = Cast<AAuraCharacterBase>(TargetAvatar))
+	{
+		if (UAuraAbilitySystemComponent* TargetASC = Cast<UAuraAbilitySystemComponent>(AuraTargetCharacter->GetAbilitySystemComponent()))
+		{
+			if (TargetASC->GetStatusFromAbilityTag(AbilityTag) == FAuraGameplayTags::Get().Abilities_Status_Equipped)
+			{
+				const int32 AbilityLevel = UAuraAbilitySystemLibrary::GetAbilityLevelByTag(TargetASC, AbilityTag);
+				const float ActivationChance = HaloOfProtectionCurve->GetFloatValue(AbilityLevel);
+				
+				if (FMath::RandRange(1, 100) < ActivationChance * 100)
+				{
+					if (const UAuraAttributeSet* TargetAttributes = Cast<UAuraAttributeSet>(AuraTargetCharacter->GetAttributeSet()))
+					{
+						const float PlayerMaxHealth = TargetAttributes->GetMaxHealth();
+						const float SiphonAmount = ActivationChance * PlayerMaxHealth;
+
+						FGameplayEffectSpecHandle SiphonSpecHandle = TargetASC->MakeOutgoingSpec(LifeSiphonGameplayEffect, AbilityLevel, TargetASC->MakeEffectContext());
+						if (SiphonSpecHandle.IsValid())
+						{
+							SiphonSpecHandle.Data->SetSetByCallerMagnitude(FAuraGameplayTags::Get().Event_Data_HealthAmount, SiphonAmount);
+							TargetASC->ApplyGameplayEffectSpecToSelf(*SiphonSpecHandle.Data);
+							
+							UGameplayStatics::PlaySoundAtLocation(this, HaloProtectionSuccessfulSound, GetActorLocation());
+							
+							HaloOfProtectionSuccessNiagara->Activate();
+							FTimerHandle TimerHandle;
+							GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+							{
+								HaloOfProtectionSuccessNiagara->Deactivate();
+							}, 1.0f, false);
+							
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+	return false;
 }
 
 FOnDeathSignature& AAuraCharacterBase::GetOnDeathDelegate()

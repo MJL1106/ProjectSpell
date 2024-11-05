@@ -9,6 +9,7 @@
 #include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "AuraCharacterBase.generated.h"
 
+class UNiagaraComponent;
 class UPassiveNiagaraComponent;
 class UNiagaraSystem;
 class UDebuffNiagaraComponent;
@@ -39,6 +40,8 @@ public:
 	/** Combat Interface */
 	virtual UAnimMontage* GetHitReactMontage_Implementation() override;
 	virtual void Die(const FVector& DeathImpulse) override;
+	virtual void SiphonAttribute(AActor* SourceAvatar, AActor* TargetAvatar, const FGameplayTag& AbilityTag, const FGameplayTag& DataEventTag) override;
+	virtual bool IsSuccessfulHaloProtection(AActor* TargetAvatar) override;
 	virtual FOnDeathSignature& GetOnDeathDelegate() override;
 	virtual FVector GetCombatSocketLocation_Implementation(const FGameplayTag& MontageTag) override;
 	virtual bool IsDead_Implementation() const override;
@@ -71,6 +74,37 @@ public:
 	
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	bool bIsBeingShocked = false;
+
+
+	/* Passive Ability Info*/
+	UPROPERTY(EditAnywhere, Category = "PassiveAbilities|LifeSiphon")
+	UCurveFloat* LifeSiphonCurve;
+
+	UPROPERTY(EditDefaultsOnly, Category = "PassiveAbilities|LifeSiphon")
+	TSubclassOf<UGameplayEffect> LifeSiphonGameplayEffect;
+
+	UPROPERTY(EditAnywhere, Category = "PassiveAbilities|LifeSiphon")
+	TObjectPtr<UNiagaraComponent> LifeSiphonSuccessNiagaraComponent;
+	
+	UPROPERTY(EditAnywhere, Category = "PassiveAbilities|ManaSiphon")
+	UCurveFloat* ManaSiphonCurve;
+
+	UPROPERTY(EditDefaultsOnly, Category = "PassiveAbilities|ManaSiphon")
+	TSubclassOf<UGameplayEffect> ManaSiphonGameplayEffect;
+
+	UPROPERTY(EditAnywhere, Category = "PassiveAbilities|ManaSiphon")
+	TObjectPtr<UNiagaraComponent> ManaSiphonSuccessNiagaraComponent;
+
+	UPROPERTY(EditAnywhere, Category = "PassiveAbilities|HaloOfProtection")
+	UCurveFloat* HaloOfProtectionCurve;
+
+	UPROPERTY(EditAnywhere, Category = "PassiveAbilities|HaloOfProtection")
+	USoundBase* HaloProtectionSuccessfulSound;
+
+	UPROPERTY(EditAnywhere, Category = "PassiveAbilities|HaloOfProtection")
+	TObjectPtr<UNiagaraComponent> HaloOfProtectionSuccessNiagara;
+	
+	/* End Passive Ability Info */
 
 	UFUNCTION()
 	virtual void OnRep_Stunned();
