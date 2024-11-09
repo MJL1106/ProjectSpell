@@ -69,7 +69,7 @@ void AAuraCharacterBase::Tick(float DeltaSeconds)
 	EffectAttachComponent->SetWorldRotation(FRotator::ZeroRotator);
 }
 
-void AAuraCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void AAuraCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const 
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
