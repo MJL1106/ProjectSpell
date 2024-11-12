@@ -11,6 +11,50 @@
 #include "TimerManager.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 
+FString UAuraArcaneVortex::GetDescription(int32 Level)
+{
+	const int32 ScaledDamage = Damage.GetValueAtLevel(Level);
+	const float ManaCost = FMath::Abs(GetManaCost(Level));
+	const float Cooldown = GetCooldown(Level);
+	return FString::Printf(TEXT(
+			"<Title>ARCANE VORTEX</>\n\n"
+
+			"<Small>Level: </><Level>%d</>\n"
+			"<Small>ManaCost: </><ManaCost>%.1f</>\n"
+			"<Small>Cooldown: </><Cooldown>%.1f</>\n\n"
+
+			"<Default>Summons a vortex of arcane energy, "
+			"pulling in any enemies within it's gravitational area, dealing "
+			"</><Damage>%d</><Default> to any enemy warped in.</>"
+			),
+			Level,
+			ManaCost,
+			Cooldown,
+			ScaledDamage);
+}
+
+FString UAuraArcaneVortex::GetNextLevelDescription(int32 Level)
+{
+	const int32 ScaledDamage = Damage.GetValueAtLevel(Level);
+	const float ManaCost = FMath::Abs(GetManaCost(Level));
+	const float Cooldown = GetCooldown(Level);
+	return FString::Printf(TEXT(
+			"<Title>NEXT LEVEL</>\n\n"
+
+			"<Small>Level: </><Level>%d</>\n"
+			"<Small>ManaCost: </><ManaCost>%.1f</>\n"
+			"<Small>Cooldown: </><Cooldown>%.1f</>\n\n"
+
+			"<Default>Summons a vortex of arcane energy, "
+			"pulling in any enemies within it's gravitational area, dealing "
+			"</><Damage>%d</><Default> to any enemy warped in.</>"
+			),
+			Level,
+			ManaCost,
+			Cooldown,
+			ScaledDamage);
+}
+
 void UAuraArcaneVortex::PullActorTowardsLocation(AActor* ActorToPull, const FVector& TargetLocation, float PullSpeed)
 {
 	if (!ActorToPull) return;

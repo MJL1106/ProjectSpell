@@ -5,6 +5,50 @@
 
 #include "Actor/AuraProjectile.h"
 
+FString UAuraFireTornado::GetDescription(int32 Level)
+{
+	const int32 ScaledDamage = Damage.GetValueAtLevel(Level);
+	const float ManaCost = FMath::Abs(GetManaCost(Level));
+	const float Cooldown = GetCooldown(Level);
+	return FString::Printf(TEXT(
+			"<Title>FIRE TORNADO</>\n\n"
+
+			"<Small>Level: </><Level>%d</>\n"
+			"<Small>ManaCost: </><ManaCost>%.1f</>\n"
+			"<Small>Cooldown: </><Cooldown>%.1f</>\n\n"
+
+			"<Default>Summons fire tornado, "
+			"sweeping enemies off their feet causing them to repeatedly burn, with a damage of "
+			"</><Damage>%d</><Default>.</>"
+			),
+			Level,
+			ManaCost,
+			Cooldown,
+			ScaledDamage);
+}
+
+FString UAuraFireTornado::GetNextLevelDescription(int32 Level)
+{
+	const int32 ScaledDamage = Damage.GetValueAtLevel(Level);
+	const float ManaCost = FMath::Abs(GetManaCost(Level));
+	const float Cooldown = GetCooldown(Level);
+	return FString::Printf(TEXT(
+			"<Title>NEXT LEVEL</>\n\n"
+
+			"<Small>Level: </><Level>%d</>\n"
+			"<Small>ManaCost: </><ManaCost>%.1f</>\n"
+			"<Small>Cooldown: </><Cooldown>%.1f</>\n\n"
+
+			"<Default>Summons fire tornado, "
+			"sweeping enemies off their feet causing them to repeatedly burn, with a damage of "
+			"</><Damage>%d</><Default>.</>"
+			),
+			Level,
+			ManaCost,
+			Cooldown,
+			ScaledDamage);
+}
+
 void UAuraFireTornado::SpawnTornado(const FVector& ProjectileTargetLocation, const FGameplayTag& SocketTag, bool bOverridePitch, float PitchOverride)
 {
 	const bool bIsServer = GetAvatarActorFromActorInfo()->HasAuthority();
