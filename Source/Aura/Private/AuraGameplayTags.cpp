@@ -301,6 +301,11 @@ FName("Abilities.Arcane.ArcaneVortex"),
 FString("ArcaneVortex Ability tag")
 );
 
+	GameplayTags.Abilities_Arcane_ArcaneDecay = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Abilities.Arcane.ArcaneDecay"),
+FString("ArcaneDecay Ability tag")
+);
+
 	/* Passive Spells */
 
 	GameplayTags.Abilities_Passive_LifeSiphon = UGameplayTagsManager::Get().AddNativeGameplayTag(

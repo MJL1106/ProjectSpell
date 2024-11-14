@@ -18,6 +18,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	TArray<AAuraShockBolt*> SpawnShockwave();
+	
+	virtual FString GetDescription(int32 Level) override;
+	virtual FString GetNextLevelDescription(int32 Level) override;
 
 protected:
 

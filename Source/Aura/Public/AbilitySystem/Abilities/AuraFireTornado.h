@@ -13,7 +13,10 @@ UCLASS()
 class AURA_API UAuraFireTornado : public UAuraProjectileSpell
 {
 	GENERATED_BODY()
-
+public:
+	virtual FString GetDescription(int32 Level) override;
+	virtual FString GetNextLevelDescription(int32 Level) override;
+	
 protected:
 
 	UFUNCTION(BlueprintCallable, Category = "Projectile")
