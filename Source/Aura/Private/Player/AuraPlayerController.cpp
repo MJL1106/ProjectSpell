@@ -294,17 +294,20 @@ void AAuraPlayerController::SetupInputComponent()
 
 void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
 {
+	// Block movement if the player has a blocking input GameplayTag
 	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputPressed)) return;
-	const FVector2d InputAxisVector = InputActionValue.Get<FVector2d>();
-	const FRotator Rotation = GetControlRotation();
-	const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);
 
-	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+	// Get the input vector from the input action (2D movement input)
+	const FVector2D InputAxisVector = InputActionValue.Get<FVector2D>();
 
+	// Define fixed global movement directions
+	const FVector ForwardDirection = FVector(1.0f, 0.0f, 0.0f); // North
+	const FVector RightDirection = FVector(0.0f, 1.0f, 0.0f);   // East
+
+	// Add movement input to the controlled pawn
 	if (APawn* ControlledPawn = GetPawn<APawn>())
 	{
-		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
-		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
+		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y); // Move Forward/Backward (W/S)
+		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);  // Move Right/Left (A/D)
 	}
 }
