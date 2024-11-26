@@ -101,6 +101,11 @@ FString("Maximum amount of Mana obtainable")
 FString("Input Tag for Right Mouse Button")
 	);
 
+	GameplayTags.InputTag_MDM = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("InputTag.MDM"),
+FString("Input Tag for Middle Mouse Button")
+);
+
 	GameplayTags.InputTag_1 = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("InputTag.1"),
 FString("Input Tag for 1 Key")
