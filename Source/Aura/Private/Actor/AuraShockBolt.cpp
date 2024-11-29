@@ -34,5 +34,6 @@ void AAuraShockBolt::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, A
 			DamageEffectParams.TargetAbilitySystemComponent = TargetASC;
 			UAuraAbilitySystemLibrary::ApplyDamageEffect(DamageEffectParams);
 		}
+		Destroy();
 	}
 }

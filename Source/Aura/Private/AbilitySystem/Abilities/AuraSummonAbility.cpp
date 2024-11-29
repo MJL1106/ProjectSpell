@@ -3,6 +3,8 @@
 
 #include "AbilitySystem/Abilities/AuraSummonAbility.h"
 
+#include "Character/AuraEnemy.h"
+
 
 TArray<FVector> UAuraSummonAbility::GetSpawnLocations()
 {
@@ -33,3 +35,19 @@ TSubclassOf<APawn> UAuraSummonAbility::GetRandomMinionClass()
 	const int32 Selection = FMath::RandRange(0, MinionClasses.Num() - 1);
 	return MinionClasses[Selection];
 }
+
+/*APawn* UAuraSummonAbility::SpawnSummonEnemies(TSubclassOf<APawn> MinionClass, const FVector& SpawnLocation, const FRotator& SpawnRotation)
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+	
+	AAuraEnemy* Enemy = GetWorld()->SpawnActorDeferred<AAuraEnemy>(MinionClass, SpawnTransform);
+	Enemy->SetLevel(GetAvatarActorFromActorInfo()->);
+	Enemy->SetCharacterClass(CharacterClass);
+	Enemy->FinishSpawning(GetActorTransform());
+	Enemy->SpawnDefaultController();
+	
+	return;
+}*/
