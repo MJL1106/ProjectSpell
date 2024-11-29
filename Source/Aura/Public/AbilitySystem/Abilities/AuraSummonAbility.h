@@ -21,8 +21,8 @@ public:
 	UFUNCTION(BLueprintPure, Category = "Summoning")
 	TSubclassOf<APawn> GetRandomMinionClass();
 
-	/*UFUNCTION(BlueprintCallable)
-	APawn* SpawnSummonEnemies(TSubclassOf<APawn> MinionClass, const FVector& SpawnLocation, const FRotator& SpawnRotation);*/
+	UFUNCTION(BlueprintCallable)
+	APawn* SpawnSummonEnemies(TSubclassOf<APawn> MinionClass, const FVector& SpawnLocation, const FRotator& SpawnRotation);
 
 	UPROPERTY(EditDefaultsOnly, Category = "Summoning")
 	int32 NumMinions = 5;

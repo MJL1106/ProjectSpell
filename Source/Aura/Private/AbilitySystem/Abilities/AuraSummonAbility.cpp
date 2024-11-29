@@ -3,6 +3,7 @@
 
 #include "AbilitySystem/Abilities/AuraSummonAbility.h"
 
+#include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Character/AuraEnemy.h"
 
 
@@ -36,18 +37,28 @@ TSubclassOf<APawn> UAuraSummonAbility::GetRandomMinionClass()
 	return MinionClasses[Selection];
 }
 
-/*APawn* UAuraSummonAbility::SpawnSummonEnemies(TSubclassOf<APawn> MinionClass, const FVector& SpawnLocation, const FRotator& SpawnRotation)
+APawn* UAuraSummonAbility::SpawnSummonEnemies(TSubclassOf<APawn> MinionClass, const FVector& SpawnLocation, const FRotator& SpawnRotation)
 {
+	if (!MinionClass)
+	{
+		return nullptr;
+	}
+
+	UAbilitySystemComponent* ASC = GetAvatarActorFromActorInfo()->FindComponentByClass<UAbilitySystemComponent>();
+	if (!ASC)
+	{
+		return nullptr;
+	}
+
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 	FTransform SpawnTransform(SpawnRotation, SpawnLocation);
 	
 	AAuraEnemy* Enemy = GetWorld()->SpawnActorDeferred<AAuraEnemy>(MinionClass, SpawnTransform);
-	Enemy->SetLevel(GetAvatarActorFromActorInfo()->);
-	Enemy->SetCharacterClass(CharacterClass);
-	Enemy->FinishSpawning(GetActorTransform());
+	Enemy->SetLevel(ICombatInterface::Execute_GetPlayerLevel(ASC->GetAvatarActor()));
+	Enemy->FinishSpawning(SpawnTransform);
 	Enemy->SpawnDefaultController();
 	
-	return;
-}*/
+	return Cast<APawn>(Enemy);
+}
