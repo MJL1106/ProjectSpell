@@ -30,14 +30,13 @@ class AURA_API AAuraEffectActor : public AActor
 	
 public:	
 	AAuraEffectActor();
-
-	virtual void Tick(float DeltaSeconds) override;
+	virtual void Tick(float DeltaTime) override;
 protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(BlueprintReadWrite)
 	FVector CalculatedLocation;
-	
+
 	UPROPERTY(BlueprintReadWrite)
 	FRotator CalculatedRotation;
 
@@ -55,12 +54,12 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void StartRotation();
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Movement")
 	float SineAmplitude = 1.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Movement")
-	float SinePeriodConstant = 1; // 2Pi
+	float SinePeriodConstant = 1.f; 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Movement")
 	FVector InitialLocation;
@@ -78,7 +77,7 @@ protected:
 	bool bDestroyOnEffectApplication = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
-	bool bApplyEffectToEnemies = false;
+	bool bApplyEffectsToEnemies = false;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
 	TSubclassOf<UGameplayEffect> InstantGameplayEffectClass;
@@ -106,9 +105,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Applied Effects")
 	float ActorLevel = 1.f;
 
-private:
-	
-	float RunningTime = 0.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
+	float TargetHeightAboveGround = 10.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bDropping = false;
+
+private:
+
+	float RunningTime = 0.f;
 	void ItemMovement(float DeltaTime);
+	void DropToGround();
 };
