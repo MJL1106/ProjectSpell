@@ -38,6 +38,8 @@ public:
 	virtual AActor* GetCombatTarget_Implementation() const override;
 	/** End Combat Interface */
 
+	virtual void SetBlackboardShock() override;
+
 	UPROPERTY(BlueprintAssignable)
 	FOnAttributeChangedSignature OnHealthChanged;
 

@@ -6,7 +6,6 @@
 #include "GameFramework/GameModeBase.h"
 #include "AuraGameModeBase.generated.h"
 
-class AAuraBackgroundMusic;
 class ULootTiers;
 class ULoadScreenSaveGame;
 class USaveGame;
