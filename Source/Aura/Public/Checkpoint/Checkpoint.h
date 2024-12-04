@@ -33,6 +33,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	bool bBindOverlapCallback = true;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UUserWidget> CheckpointWidgetClass;
+
 protected:
 
 	/* Highlight Interface */
