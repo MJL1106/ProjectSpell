@@ -38,6 +38,8 @@ public:
 	virtual AActor* GetCombatTarget_Implementation() const override;
 	/** End Combat Interface */
 
+	virtual void SetBlackboardShock() override;
+
 	UPROPERTY(BlueprintAssignable)
 	FOnAttributeChangedSignature OnHealthChanged;
 
@@ -67,9 +69,7 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Class Defaults")
 	int32 Level = 1;
-
 	
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UWidgetComponent> HealthBar;
 

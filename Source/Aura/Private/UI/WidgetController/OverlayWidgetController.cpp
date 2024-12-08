@@ -90,8 +90,6 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 			}
 		);
 	}
-
-	
 }
 
 void UOverlayWidgetController::OnXPChanged(int32 NewXP)

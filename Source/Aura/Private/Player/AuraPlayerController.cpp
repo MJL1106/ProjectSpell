@@ -145,7 +145,7 @@ void AAuraPlayerController::CursorTrace()
 void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 {
 	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputPressed)) return;
-	if (InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB))
+	if (InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_MDM))
 	{
 		if (IsValid(ThisActor))
 		{
@@ -166,7 +166,7 @@ void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 {
 	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputReleased)) return;
-	if (!InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB))
+	if (!InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_MDM))
 	{
 		if (GetASC())
 		{
@@ -216,7 +216,7 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 {
 	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputHeld)) return;
-	if (!InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB))
+	if (!InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_MDM))
 	{
 		if (GetASC())
 		{
@@ -295,13 +295,12 @@ void AAuraPlayerController::SetupInputComponent()
 void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
 {
 	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputPressed)) return;
-	const FVector2d InputAxisVector = InputActionValue.Get<FVector2d>();
-	const FRotator Rotation = GetControlRotation();
-	const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);
-
-	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
+	
+	const FVector2D InputAxisVector = InputActionValue.Get<FVector2D>();
+	
+	const FVector ForwardDirection = FVector(1.0f, 0.0f, 0.0f);
+	const FVector RightDirection = FVector(0.0f, 1.0f, 0.0f);
+	
 	if (APawn* ControlledPawn = GetPawn<APawn>())
 	{
 		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);

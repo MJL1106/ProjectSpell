@@ -3,6 +3,7 @@
 
 #include "Checkpoint/Checkpoint.h"
 
+#include "Blueprint/UserWidget.h"
 #include "Components/SphereComponent.h"
 #include "Game/AuraGameModeBase.h"
 #include "Interaction/PlayerInterface.h"
@@ -74,6 +75,28 @@ void ACheckpoint::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 		
 		IPlayerInterface::Execute_SaveProgress(OtherActor, PlayerStartTag);
 		HandleGlowEffects();
+
+		if (CheckpointWidgetClass)
+		{
+			UUserWidget* CheckpointWidget = CreateWidget<UUserWidget>(GetWorld(), CheckpointWidgetClass);
+			if (CheckpointWidget)
+			{
+				CheckpointWidget->AddToViewport();
+
+				// Use a timer to delay removal of the widget
+				FTimerHandle WidgetTimerHandle;
+				FTimerDelegate TimerDel;
+				TimerDel.BindLambda([CheckpointWidget]()
+				{
+					if (CheckpointWidget->IsInViewport())
+					{
+						CheckpointWidget->RemoveFromParent();
+					}
+				});
+
+				GetWorld()->GetTimerManager().SetTimer(WidgetTimerHandle, TimerDel, 3.0f, false);
+			}
+		}
 	}
 }
 

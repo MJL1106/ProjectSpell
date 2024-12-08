@@ -200,7 +200,6 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 			{
 				Props.TargetCharacter->LaunchCharacter(KnockbackForce, true, true);
 			}
-			
 		}
 
 		const bool bBlock = UAuraAbilitySystemLibrary::IsBlockedHit(Props.EffectContextHandle);
@@ -341,6 +340,7 @@ void UAuraAttributeSet::SendXPEvent(const FEffectProperties& Props)
 
 void UAuraAttributeSet::ShowFloatingText(const FEffectProperties& Props, float Damage, bool bBlockedHit, bool bCriticalHit) const
 {
+	if (!IsValid(Props.SourceCharacter) || !IsValid(Props.TargetCharacter)) return;
 	if (Props.SourceCharacter != Props.TargetCharacter)
 	{
 		if(AAuraPlayerController* PC = Cast<AAuraPlayerController>(Props.SourceCharacter->Controller))

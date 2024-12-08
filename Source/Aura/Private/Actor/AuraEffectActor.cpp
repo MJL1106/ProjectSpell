@@ -10,25 +10,30 @@
 AAuraEffectActor::AAuraEffectActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
-	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot")));
+
+	SetRootComponent(CreateDefaultSubobject<USceneComponent>("SceneRoot"));
 }
 
-void AAuraEffectActor::Tick(float DeltaSeconds)
+void AAuraEffectActor::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaSeconds);
-	
-	RunningTime+=DeltaSeconds;
+	Super::Tick(DeltaTime);
+	RunningTime += DeltaTime;
 	const float SinePeriod = 2 * PI / SinePeriodConstant;
 	if (RunningTime > SinePeriod)
 	{
 		RunningTime = 0.f;
 	}
-	ItemMovement(DeltaSeconds);
+	ItemMovement(DeltaTime);
+
+	if (bDropping)
+	{
+		DropToGround();
+	}
 }
 
 void AAuraEffectActor::ItemMovement(float DeltaTime)
 {
-	if ( bRotates)
+	if (bRotates)
 	{
 		const FRotator DeltaRotation(0.f, DeltaTime * RotationRate, 0.f);
 		CalculatedRotation = UKismetMathLibrary::ComposeRotators(CalculatedRotation, DeltaRotation);
@@ -37,6 +42,35 @@ void AAuraEffectActor::ItemMovement(float DeltaTime)
 	{
 		const float Sine = SineAmplitude * FMath::Sin(RunningTime * SinePeriodConstant);
 		CalculatedLocation = InitialLocation + FVector(0.f, 0.f, Sine);
+	}
+}
+
+void AAuraEffectActor::DropToGround()
+{
+	FVector StartLocation = GetActorLocation();
+	FVector EndLocation = StartLocation;
+	EndLocation.Z -= 1000.0f;
+
+	FHitResult HitResult;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	
+	if (GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, QueryParams))
+	{
+		FVector GroundLocation = HitResult.Location;
+		GroundLocation.Z += TargetHeightAboveGround;
+		
+		FVector CurrentLocation = GetActorLocation();
+		FVector TargetLocation = GroundLocation;
+		float InterpSpeed = 300.0f;
+		FVector NewLocation = FMath::VInterpTo(CurrentLocation, TargetLocation, GetWorld()->GetDeltaSeconds(), InterpSpeed);
+
+		SetActorLocation(NewLocation);
+
+		if (FVector::Dist(NewLocation, TargetLocation) <= 1.0f)
+		{
+			bDropping = false;
+		}
 	}
 }
 
@@ -64,13 +98,10 @@ void AAuraEffectActor::StartRotation()
 
 void AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGameplayEffect> GameplayEffectClass)
 {
-	if (TargetActor->ActorHasTag(FName("Enemy")) && !bApplyEffectToEnemies) return;
+	if (TargetActor->ActorHasTag(FName("Enemy")) && !bApplyEffectsToEnemies) return;
 	
 	UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
-	if (TargetASC == nullptr)
-	{
-		return;
-	}
+	if (TargetASC == nullptr) return;
 
 	check(GameplayEffectClass);
 	FGameplayEffectContextHandle EffectContextHandle = TargetASC->MakeEffectContext();
@@ -78,7 +109,7 @@ void AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGam
 	const FGameplayEffectSpecHandle EffectSpecHandle = TargetASC->MakeOutgoingSpec(GameplayEffectClass, ActorLevel, EffectContextHandle);
 	const FActiveGameplayEffectHandle ActiveEffectHandle = TargetASC->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 
-	const bool bIsInfinite = EffectSpecHandle.Data.Get()->Def.Get()->DurationPolicy == EGameplayEffectDurationType::Infinite;
+	const bool bIsInfinite =  EffectSpecHandle.Data.Get()->Def.Get()->DurationPolicy == EGameplayEffectDurationType::Infinite;
 	if (bIsInfinite && InfiniteEffectRemovalPolicy == EEffectRemovalPolicy::RemoveOnEndOverlap)
 	{
 		ActiveEffectHandles.Add(ActiveEffectHandle, TargetASC);
@@ -92,7 +123,7 @@ void AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGam
 
 void AAuraEffectActor::OnOverlap(AActor* TargetActor)
 {
-	if (TargetActor->ActorHasTag(FName("Enemy")) && !bApplyEffectToEnemies) return;
+	if (TargetActor->ActorHasTag(FName("Enemy")) && !bApplyEffectsToEnemies) return;
 	
 	if (InstantEffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnOverlap)
 	{
@@ -110,7 +141,7 @@ void AAuraEffectActor::OnOverlap(AActor* TargetActor)
 
 void AAuraEffectActor::OnEndOverlap(AActor* TargetActor)
 {
-	if (TargetActor->ActorHasTag(FName("Enemy")) && !bApplyEffectToEnemies) return;
+	if (TargetActor->ActorHasTag(FName("Enemy")) && !bApplyEffectsToEnemies) return;
 	
 	if (InstantEffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnEndOverlap)
 	{

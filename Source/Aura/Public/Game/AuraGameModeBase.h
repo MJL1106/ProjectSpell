@@ -12,6 +12,7 @@ class USaveGame;
 class UMVVM_LoadSlot;
 class UAbilityInfo;
 class UCharacterClassInfo;
+
 /**
  * 
  */

@@ -118,6 +118,8 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	virtual void SetBlackboardShock();
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	TObjectPtr<USkeletalMeshComponent> Weapon;
 

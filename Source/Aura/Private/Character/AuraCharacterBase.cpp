@@ -16,7 +16,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
-
 AAuraCharacterBase::AAuraCharacterBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -344,12 +343,19 @@ USkeletalMeshComponent* AAuraCharacterBase::GetWeapon_Implementation()
 void AAuraCharacterBase::SetIsBeingShocked_Implementation(bool bIsInShock)
 {
 	bIsBeingShocked = bIsInShock;
+	SetBlackboardShock();
 }
 
 bool AAuraCharacterBase::IsBeingShocked_Implementation() const
 {
 	return bIsBeingShocked;
 }
+
+void AAuraCharacterBase::SetBlackboardShock()
+{
+	
+}
+
 
 FOnDamageSignature& AAuraCharacterBase::GetOnDamageSignature()
 {
