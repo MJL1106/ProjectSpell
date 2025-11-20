@@ -310,6 +310,8 @@ void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
 
 bool AAuraPlayerController::InputTouch(uint32 Handle, ETouchType::Type Type, const FVector2D& TouchLocation, float Force, FDateTime DeviceTimestamp, uint32 TouchpadIndex)
 {
+	UE_LOG(LogTemp, Warning, TEXT("InputTouch called - Handle: %d, Type: %d, Location: %s"), Handle, (int32)Type, *TouchLocation.ToString());
+
 	const bool bResult = Super::InputTouch(Handle, Type, TouchLocation, Force, DeviceTimestamp, TouchpadIndex);
 
 	// Only handle first touch
@@ -335,6 +337,8 @@ bool AAuraPlayerController::InputTouch(uint32 Handle, ETouchType::Type Type, con
 
 void AAuraPlayerController::HandleTouchPressed(const FVector2D& TouchLocation)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Touch Pressed at: %s"), *TouchLocation.ToString());
+
 	// Check if input is blocked
 	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputPressed)) return;
 
@@ -346,6 +350,7 @@ void AAuraPlayerController::HandleTouchPressed(const FVector2D& TouchLocation)
 	FVector WorldLocation, WorldDirection;
 	if (!DeprojectScreenPositionToWorld(TouchLocation.X, TouchLocation.Y, WorldLocation, WorldDirection))
 	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to deproject screen position"));
 		return;
 	}
 
@@ -359,15 +364,19 @@ void AAuraPlayerController::HandleTouchPressed(const FVector2D& TouchLocation)
 		CachedDestination = TouchHit.ImpactPoint;
 		TouchTargetActor = TouchHit.GetActor();
 
+		UE_LOG(LogTemp, Warning, TEXT("Touch hit actor: %s"), TouchTargetActor ? *TouchTargetActor->GetName() : TEXT("None"));
+
 		// Check if touching an enemy
 		if (IsValid(TouchTargetActor) && TouchTargetActor->Implements<UEnemyInterface>())
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Touch detected ENEMY - triggering attack (LMB)"));
 			TouchTargetingStatus = ETargetingStatus::TargetingEnemy;
 			// Simulate LMB press for attacking enemy
 			AbilityInputTagPressed(FAuraGameplayTags::Get().InputTag_LMB);
 		}
 		else
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Touch detected GROUND/NON-ENEMY - triggering movement (MDM)"));
 			// Touching ground/non-enemy - prepare for movement
 			TouchTargetingStatus = ETargetingStatus::TargetingNonEnemy;
 			// Simulate MDM press for movement
@@ -376,6 +385,7 @@ void AAuraPlayerController::HandleTouchPressed(const FVector2D& TouchLocation)
 	}
 	else
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Touch did not hit anything"));
 		TouchTargetingStatus = ETargetingStatus::NotTargeting;
 	}
 }
