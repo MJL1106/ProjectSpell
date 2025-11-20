@@ -308,12 +308,12 @@ void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
 	}
 }
 
-void AAuraPlayerController::InputTouch(uint32 Handle, ETouchType::Type Type, const FVector2D& TouchLocation, float Force, FDateTime DeviceTimestamp, uint32 TouchpadIndex)
+bool AAuraPlayerController::InputTouch(uint32 Handle, ETouchType::Type Type, const FVector2D& TouchLocation, float Force, FDateTime DeviceTimestamp, uint32 TouchpadIndex)
 {
-	Super::InputTouch(Handle, Type, TouchLocation, Force, DeviceTimestamp, TouchpadIndex);
+	const bool bResult = Super::InputTouch(Handle, Type, TouchLocation, Force, DeviceTimestamp, TouchpadIndex);
 
 	// Only handle first touch
-	if (Handle != 0) return;
+	if (Handle != 0) return bResult;
 
 	switch (Type)
 	{
@@ -329,6 +329,8 @@ void AAuraPlayerController::InputTouch(uint32 Handle, ETouchType::Type Type, con
 		default:
 			break;
 	}
+
+	return bResult;
 }
 
 void AAuraPlayerController::HandleTouchPressed(const FVector2D& TouchLocation)
@@ -473,8 +475,8 @@ void AAuraPlayerController::HandleTouchMoved(const FVector2D& TouchLocation)
 		// Handle drag-to-move
 		if (APawn* ControlledPawn = GetPawn())
 		{
-			const FVector WorldDirection = (CachedDestination - ControlledPawn->GetActorLocation()).GetSafeNormal();
-			ControlledPawn->AddMovementInput(WorldDirection);
+			const FVector MoveDirection = (CachedDestination - ControlledPawn->GetActorLocation()).GetSafeNormal();
+			ControlledPawn->AddMovementInput(MoveDirection);
 		}
 
 		// Continue holding movement input
