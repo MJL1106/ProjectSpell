@@ -290,11 +290,6 @@ void AAuraPlayerController::SetupInputComponent()
 	AuraInputComponent->BindAction(ShiftAction, ETriggerEvent::Completed, this, &AAuraPlayerController::ShiftReleased);
 
 	AuraInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, &ThisClass:: AbilityInputTagHeld);
-
-	// Bind touch input for mobile platforms
-	AuraInputComponent->BindTouch(IE_Pressed, this, &AAuraPlayerController::OnTouchPressed);
-	AuraInputComponent->BindTouch(IE_Released, this, &AAuraPlayerController::OnTouchReleased);
-	AuraInputComponent->BindTouch(IE_Repeat, this, &AAuraPlayerController::OnTouchMoved);
 }
 
 void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
@@ -313,21 +308,49 @@ void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
 	}
 }
 
-void AAuraPlayerController::OnTouchPressed(ETouchIndex::Type FingerIndex, FVector Location)
+void AAuraPlayerController::InputTouch(uint32 Handle, ETouchType::Type Type, const FVector2D& TouchLocation, float Force, FDateTime DeviceTimestamp, uint32 TouchpadIndex)
 {
-	// Only handle first finger touch
-	if (FingerIndex != ETouchIndex::Touch1) return;
+	Super::InputTouch(Handle, Type, TouchLocation, Force, DeviceTimestamp, TouchpadIndex);
 
+	// Only handle first touch
+	if (Handle != 0) return;
+
+	switch (Type)
+	{
+		case ETouchType::Began:
+			HandleTouchPressed(TouchLocation);
+			break;
+		case ETouchType::Moved:
+			HandleTouchMoved(TouchLocation);
+			break;
+		case ETouchType::Ended:
+			HandleTouchReleased(TouchLocation);
+			break;
+		default:
+			break;
+	}
+}
+
+void AAuraPlayerController::HandleTouchPressed(const FVector2D& TouchLocation)
+{
 	// Check if input is blocked
 	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputPressed)) return;
 
 	bTouchActive = true;
 	TouchFollowTime = 0.f;
-	TouchStartLocation = Location;
+	TouchStartLocation = TouchLocation;
 
-	// Get what's under the touch
+	// Convert screen space touch to world space
+	FVector WorldLocation, WorldDirection;
+	if (!DeprojectScreenPositionToWorld(TouchLocation.X, TouchLocation.Y, WorldLocation, WorldDirection))
+	{
+		return;
+	}
+
+	// Perform line trace from touch location
 	const ECollisionChannel TraceChannel = IsValid(MagicCircle) ? ECC_ExcludePlayers : ECC_Visibility;
-	GetHitResultUnderFinger(FingerIndex, TraceChannel, false, TouchHit);
+	FVector TraceEnd = WorldLocation + (WorldDirection * 10000.0f);
+	GetWorld()->LineTraceSingleByChannel(TouchHit, WorldLocation, TraceEnd, TraceChannel);
 
 	if (TouchHit.bBlockingHit)
 	{
@@ -355,11 +378,8 @@ void AAuraPlayerController::OnTouchPressed(ETouchIndex::Type FingerIndex, FVecto
 	}
 }
 
-void AAuraPlayerController::OnTouchReleased(ETouchIndex::Type FingerIndex, FVector Location)
+void AAuraPlayerController::HandleTouchReleased(const FVector2D& TouchLocation)
 {
-	// Only handle first finger touch
-	if (FingerIndex != ETouchIndex::Touch1) return;
-
 	// Check if input is blocked
 	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputReleased)) return;
 
@@ -418,11 +438,8 @@ void AAuraPlayerController::OnTouchReleased(ETouchIndex::Type FingerIndex, FVect
 	TouchTargetActor = nullptr;
 }
 
-void AAuraPlayerController::OnTouchMoved(ETouchIndex::Type FingerIndex, FVector Location)
+void AAuraPlayerController::HandleTouchMoved(const FVector2D& TouchLocation)
 {
-	// Only handle first finger touch
-	if (FingerIndex != ETouchIndex::Touch1) return;
-
 	// Check if input is blocked
 	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputHeld)) return;
 
@@ -430,13 +447,19 @@ void AAuraPlayerController::OnTouchMoved(ETouchIndex::Type FingerIndex, FVector 
 
 	TouchFollowTime += GetWorld()->GetDeltaSeconds();
 
-	// Get updated hit result under finger
-	const ECollisionChannel TraceChannel = IsValid(MagicCircle) ? ECC_ExcludePlayers : ECC_Visibility;
-	GetHitResultUnderFinger(FingerIndex, TraceChannel, false, TouchHit);
-
-	if (TouchHit.bBlockingHit)
+	// Convert screen space touch to world space
+	FVector WorldLocation, WorldDirection;
+	if (DeprojectScreenPositionToWorld(TouchLocation.X, TouchLocation.Y, WorldLocation, WorldDirection))
 	{
-		CachedDestination = TouchHit.ImpactPoint;
+		// Perform line trace from touch location
+		const ECollisionChannel TraceChannel = IsValid(MagicCircle) ? ECC_ExcludePlayers : ECC_Visibility;
+		FVector TraceEnd = WorldLocation + (WorldDirection * 10000.0f);
+		GetWorld()->LineTraceSingleByChannel(TouchHit, WorldLocation, TraceEnd, TraceChannel);
+
+		if (TouchHit.bBlockingHit)
+		{
+			CachedDestination = TouchHit.ImpactPoint;
+		}
 	}
 
 	// Handle based on targeting status

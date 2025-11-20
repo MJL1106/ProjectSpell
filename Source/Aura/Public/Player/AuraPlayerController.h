@@ -38,6 +38,9 @@ public:
 	AAuraPlayerController();
 	virtual void PlayerTick(float DeltaTime) override;
 
+	// Override touch input functions
+	virtual void InputTouch(uint32 Handle, ETouchType::Type Type, const FVector2D& TouchLocation, float Force, FDateTime DeviceTimestamp, uint32 TouchpadIndex) override;
+
 	UFUNCTION(Client, Reliable)
 	void ShowDamageNumber(float DamageAmount, ACharacter* TargetCharacter, bool bBlockedHit, bool bCriticalHit);
 
@@ -88,14 +91,14 @@ private:
 
 	UAuraAbilitySystemComponent* GetASC();
 
-	// Touch Input for iOS
-	void OnTouchPressed(ETouchIndex::Type FingerIndex, FVector Location);
-	void OnTouchReleased(ETouchIndex::Type FingerIndex, FVector Location);
-	void OnTouchMoved(ETouchIndex::Type FingerIndex, FVector Location);
+	// Touch Input for iOS - internal handlers
+	void HandleTouchPressed(const FVector2D& TouchLocation);
+	void HandleTouchReleased(const FVector2D& TouchLocation);
+	void HandleTouchMoved(const FVector2D& TouchLocation);
 
 	// Touch state tracking
 	bool bTouchActive = false;
-	FVector TouchStartLocation = FVector::ZeroVector;
+	FVector2D TouchStartLocation = FVector2D::ZeroVector;
 	FHitResult TouchHit;
 	float TouchFollowTime = 0.f;
 	ETargetingStatus TouchTargetingStatus = ETargetingStatus::NotTargeting;
