@@ -79,7 +79,7 @@ private:
 	void AbilityInputTagPressed(FGameplayTag InputTag);
 	void AbilityInputTagReleased(FGameplayTag InputTag);
 	void AbilityInputTagHeld(FGameplayTag InputTag);
-	
+
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UAuraInputConfig> InputConfig;
 
@@ -87,6 +87,19 @@ private:
 	TObjectPtr<UAuraAbilitySystemComponent> AuraAbilitySystemComponent;
 
 	UAuraAbilitySystemComponent* GetASC();
+
+	// Touch Input for iOS
+	void OnTouchPressed(ETouchIndex::Type FingerIndex, FVector Location);
+	void OnTouchReleased(ETouchIndex::Type FingerIndex, FVector Location);
+	void OnTouchMoved(ETouchIndex::Type FingerIndex, FVector Location);
+
+	// Touch state tracking
+	bool bTouchActive = false;
+	FVector TouchStartLocation = FVector::ZeroVector;
+	FHitResult TouchHit;
+	float TouchFollowTime = 0.f;
+	ETargetingStatus TouchTargetingStatus = ETargetingStatus::NotTargeting;
+	TObjectPtr<AActor> TouchTargetActor = nullptr;
 	
 	FVector CachedDestination = FVector::ZeroVector;
 	float FollowTime = 0.f;

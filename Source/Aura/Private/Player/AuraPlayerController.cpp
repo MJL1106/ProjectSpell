@@ -284,26 +284,177 @@ void AAuraPlayerController::SetupInputComponent()
 	Super::SetupInputComponent();
 
 	UAuraInputComponent* AuraInputComponent = CastChecked<UAuraInputComponent>(InputComponent);
-	
+
 	AuraInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAuraPlayerController::Move);
 	AuraInputComponent->BindAction(ShiftAction, ETriggerEvent::Started, this, &AAuraPlayerController::ShiftPressed);
 	AuraInputComponent->BindAction(ShiftAction, ETriggerEvent::Completed, this, &AAuraPlayerController::ShiftReleased);
-	
+
 	AuraInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, &ThisClass:: AbilityInputTagHeld);
+
+	// Bind touch input for mobile platforms
+	AuraInputComponent->BindTouch(IE_Pressed, this, &AAuraPlayerController::OnTouchPressed);
+	AuraInputComponent->BindTouch(IE_Released, this, &AAuraPlayerController::OnTouchReleased);
+	AuraInputComponent->BindTouch(IE_Repeat, this, &AAuraPlayerController::OnTouchMoved);
 }
 
 void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
 {
 	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputPressed)) return;
-	
+
 	const FVector2D InputAxisVector = InputActionValue.Get<FVector2D>();
-	
+
 	const FVector ForwardDirection = FVector(1.0f, 0.0f, 0.0f);
 	const FVector RightDirection = FVector(0.0f, 1.0f, 0.0f);
-	
+
 	if (APawn* ControlledPawn = GetPawn<APawn>())
 	{
 		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
 		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
+	}
+}
+
+void AAuraPlayerController::OnTouchPressed(ETouchIndex::Type FingerIndex, FVector Location)
+{
+	// Only handle first finger touch
+	if (FingerIndex != ETouchIndex::Touch1) return;
+
+	// Check if input is blocked
+	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputPressed)) return;
+
+	bTouchActive = true;
+	TouchFollowTime = 0.f;
+	TouchStartLocation = Location;
+
+	// Get what's under the touch
+	const ECollisionChannel TraceChannel = IsValid(MagicCircle) ? ECC_ExcludePlayers : ECC_Visibility;
+	GetHitResultUnderFinger(FingerIndex, TraceChannel, false, TouchHit);
+
+	if (TouchHit.bBlockingHit)
+	{
+		CachedDestination = TouchHit.ImpactPoint;
+		TouchTargetActor = TouchHit.GetActor();
+
+		// Check if touching an enemy
+		if (IsValid(TouchTargetActor) && TouchTargetActor->Implements<UEnemyInterface>())
+		{
+			TouchTargetingStatus = ETargetingStatus::TargetingEnemy;
+			// Simulate LMB press for attacking enemy
+			AbilityInputTagPressed(FAuraGameplayTags::Get().InputTag_LMB);
+		}
+		else
+		{
+			// Touching ground/non-enemy - prepare for movement
+			TouchTargetingStatus = ETargetingStatus::TargetingNonEnemy;
+			// Simulate MDM press for movement
+			AbilityInputTagPressed(FAuraGameplayTags::Get().InputTag_MDM);
+		}
+	}
+	else
+	{
+		TouchTargetingStatus = ETargetingStatus::NotTargeting;
+	}
+}
+
+void AAuraPlayerController::OnTouchReleased(ETouchIndex::Type FingerIndex, FVector Location)
+{
+	// Only handle first finger touch
+	if (FingerIndex != ETouchIndex::Touch1) return;
+
+	// Check if input is blocked
+	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputReleased)) return;
+
+	if (!bTouchActive) return;
+
+	bTouchActive = false;
+
+	// Handle based on what was touched
+	if (TouchTargetingStatus == ETargetingStatus::TargetingEnemy)
+	{
+		// Release attack input
+		AbilityInputTagReleased(FAuraGameplayTags::Get().InputTag_LMB);
+	}
+	else if (TouchTargetingStatus == ETargetingStatus::TargetingNonEnemy || TouchTargetingStatus == ETargetingStatus::NotTargeting)
+	{
+		// Handle movement - simulate MDM release for click-to-move
+		if (TouchFollowTime <= ShortPressThreshold)
+		{
+			APawn* ControlledPawn = GetPawn();
+			if (ControlledPawn && TouchHit.bBlockingHit)
+			{
+				// Highlight actor if applicable
+				if (IsValid(TouchTargetActor) && TouchTargetActor->Implements<UHighlightInterface>())
+				{
+					IHighlightInterface::Execute_SetMoveToLocation(TouchTargetActor, CachedDestination);
+				}
+				else if (GetASC() && !GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputPressed))
+				{
+					UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ClickNiagaraSystem, CachedDestination);
+				}
+
+				// Create navigation path
+				if (UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(this, ControlledPawn->GetActorLocation(), CachedDestination))
+				{
+					Spline->ClearSplinePoints();
+					for (const FVector& PointLoc : NavPath->PathPoints)
+					{
+						Spline->AddSplinePoint(PointLoc, ESplineCoordinateSpace::World);
+					}
+					if (NavPath->PathPoints.Num() > 0)
+					{
+						CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1];
+						bAutoRunning = true;
+					}
+				}
+			}
+		}
+
+		// Release movement input
+		AbilityInputTagReleased(FAuraGameplayTags::Get().InputTag_MDM);
+	}
+
+	// Reset touch state
+	TouchFollowTime = 0.f;
+	TouchTargetingStatus = ETargetingStatus::NotTargeting;
+	TouchTargetActor = nullptr;
+}
+
+void AAuraPlayerController::OnTouchMoved(ETouchIndex::Type FingerIndex, FVector Location)
+{
+	// Only handle first finger touch
+	if (FingerIndex != ETouchIndex::Touch1) return;
+
+	// Check if input is blocked
+	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputHeld)) return;
+
+	if (!bTouchActive) return;
+
+	TouchFollowTime += GetWorld()->GetDeltaSeconds();
+
+	// Get updated hit result under finger
+	const ECollisionChannel TraceChannel = IsValid(MagicCircle) ? ECC_ExcludePlayers : ECC_Visibility;
+	GetHitResultUnderFinger(FingerIndex, TraceChannel, false, TouchHit);
+
+	if (TouchHit.bBlockingHit)
+	{
+		CachedDestination = TouchHit.ImpactPoint;
+	}
+
+	// Handle based on targeting status
+	if (TouchTargetingStatus == ETargetingStatus::TargetingEnemy)
+	{
+		// Continue holding attack input
+		AbilityInputTagHeld(FAuraGameplayTags::Get().InputTag_LMB);
+	}
+	else
+	{
+		// Handle drag-to-move
+		if (APawn* ControlledPawn = GetPawn())
+		{
+			const FVector WorldDirection = (CachedDestination - ControlledPawn->GetActorLocation()).GetSafeNormal();
+			ControlledPawn->AddMovementInput(WorldDirection);
+		}
+
+		// Continue holding movement input
+		AbilityInputTagHeld(FAuraGameplayTags::Get().InputTag_MDM);
 	}
 }
