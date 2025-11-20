@@ -52,9 +52,27 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* TouchInputAction;
+    
+	// Touch state
+	float TouchStartTime;
+	bool bIsTouchHeld = false;
+	FVector2D LastTouchLocation;
+    
+	// Touch handlers
+	void OnTouchStarted();
+	void OnTouchTriggered();
+	void OnTouchCompleted();
+    
+	FHitResult GetTouchHitResult(const FVector2D& ScreenPosition);
+
 private:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputMappingContext> AuraContext;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input|Touch")
+	float AutoRunAcceptanceRadius = 50.f;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> MoveAction;
@@ -93,9 +111,6 @@ private:
 	float ShortPressThreshold = 0.5f;
 	bool bAutoRunning = false;
 	ETargetingStatus TargetingStatus = ETargetingStatus::NotTargeting;
-
-	UPROPERTY(EditDefaultsOnly)
-	float AutoRunAcceptanceRadius = 50.f;
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USplineComponent> Spline;

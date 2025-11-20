@@ -27,10 +27,16 @@ AAuraPlayerController::AAuraPlayerController()
 	Spline = CreateDefaultSubobject<USplineComponent>("Spline");
 }
 
+// Update PlayerTick to conditionally call CursorTrace
 void AAuraPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
+    
+	// Only trace cursor on PC
+#if !PLATFORM_ANDROID && !PLATFORM_IOS
 	CursorTrace();
+#endif
+    
 	AutoRun();
 	UpdateMagicCircleLocation();
 }
@@ -109,18 +115,24 @@ void AAuraPlayerController::UnHighlightActor(AActor* InActor)
 	}
 }
 
-// Line trace from cursor
+// Modify CursorTrace to only run on PC
 void AAuraPlayerController::CursorTrace()
 {
+	// Only do cursor trace on PC platforms
+#if PLATFORM_ANDROID || PLATFORM_IOS
+	return; // Skip cursor trace on mobile
+#endif
+    
 	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_CursorTrace))
 	{
 		UnHighlightActor(LastActor);
 		UnHighlightActor(ThisActor);
-		
+        
 		LastActor = nullptr;
 		ThisActor = nullptr;
 		return;
 	}
+    
 	const ECollisionChannel TraceChannel = IsValid(MagicCircle) ? ECC_ExcludePlayers : ECC_Visibility;
 	GetHitResultUnderCursor(TraceChannel, false, CursorHit);
 	if (!CursorHit.bBlockingHit) return;
@@ -134,7 +146,7 @@ void AAuraPlayerController::CursorTrace()
 	{
 		ThisActor = nullptr;
 	}
-	
+    
 	if (LastActor != ThisActor)
 	{
 		UnHighlightActor(LastActor);
@@ -264,12 +276,33 @@ void AAuraPlayerController::BeginPlay()
 	Super::BeginPlay();
 	check(AuraContext);
 
+	UE_LOG(LogTemp, Warning, TEXT("AuraPlayerController BeginPlay"));
+    
+	if (TouchInputAction)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Touch Input Action is SET"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Touch Input Action is NULL - Set it in Blueprint!"));
+	}
+
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
 	if (Subsystem)
 	{
 		Subsystem->AddMappingContext(AuraContext, 0);
 	}
 
+	// Platform-specific setup
+#if PLATFORM_ANDROID || PLATFORM_IOS
+	// Mobile setup
+	bShowMouseCursor = false;
+	DefaultMouseCursor = EMouseCursor::None;
+        
+	FInputModeGameOnly InputModeData;
+	SetInputMode(InputModeData);
+#else
+	// PC setup
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
 
@@ -277,6 +310,7 @@ void AAuraPlayerController::BeginPlay()
 	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	InputModeData.SetHideCursorDuringCapture(false);
 	SetInputMode(InputModeData);
+#endif
 }
 
 void AAuraPlayerController::SetupInputComponent()
@@ -284,12 +318,23 @@ void AAuraPlayerController::SetupInputComponent()
 	Super::SetupInputComponent();
 
 	UAuraInputComponent* AuraInputComponent = CastChecked<UAuraInputComponent>(InputComponent);
-	
+    
+	// Existing PC bindings
 	AuraInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAuraPlayerController::Move);
 	AuraInputComponent->BindAction(ShiftAction, ETriggerEvent::Started, this, &AAuraPlayerController::ShiftPressed);
 	AuraInputComponent->BindAction(ShiftAction, ETriggerEvent::Completed, this, &AAuraPlayerController::ShiftReleased);
-	
-	AuraInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, &ThisClass:: AbilityInputTagHeld);
+    
+	// Touch/Click bindings - simplified
+	if (TouchInputAction)
+	{
+		AuraInputComponent->BindAction(TouchInputAction, ETriggerEvent::Started, this, &AAuraPlayerController::OnTouchStarted);
+		AuraInputComponent->BindAction(TouchInputAction, ETriggerEvent::Triggered, this, &AAuraPlayerController::OnTouchTriggered);
+		AuraInputComponent->BindAction(TouchInputAction, ETriggerEvent::Completed, this, &AAuraPlayerController::OnTouchCompleted);
+	}
+    
+	// Ability bindings
+	AuraInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::AbilityInputTagPressed, 
+		&ThisClass::AbilityInputTagReleased, &ThisClass::AbilityInputTagHeld);
 }
 
 void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
@@ -306,4 +351,166 @@ void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
 		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
 		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
 	}
+}
+void AAuraPlayerController::OnTouchStarted()
+{
+    // Don't process if blocked
+    if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputPressed)) 
+        return;
+    
+    TouchStartTime = GetWorld()->GetTimeSeconds();
+    bIsTouchHeld = false;
+    bAutoRunning = false; // Stop any current auto-run
+    
+    // Get mouse/touch position
+    float MouseX, MouseY;
+    GetMousePosition(MouseX, MouseY);
+    FVector2D ScreenPosition(MouseX, MouseY);
+    LastTouchLocation = ScreenPosition;
+    
+    // Get hit result
+    FHitResult HitResult;
+    GetHitResultAtScreenPosition(ScreenPosition, ECC_Visibility, false, HitResult);
+    
+    if (!HitResult.bBlockingHit) return;
+    
+    // Store for other systems
+    CursorHit = HitResult;
+    
+    // Check what we hit
+    if (HitResult.GetActor() && HitResult.GetActor()->Implements<UEnemyInterface>())
+    {
+        // Enemy - start attacking
+        ThisActor = HitResult.GetActor();
+        TargetingStatus = ETargetingStatus::TargetingEnemy;
+        
+        // Highlight enemy
+        HighlightActor(ThisActor);
+        
+        // Start attack
+        if (GetASC())
+        {
+            GetASC()->AbilityInputTagPressed(FAuraGameplayTags::Get().InputTag_LMB);
+        }
+    }
+    else
+    {
+        // Ground - store the destination for when we release
+        TargetingStatus = ETargetingStatus::NotTargeting;
+        CachedDestination = HitResult.ImpactPoint;
+    }
+}
+
+void AAuraPlayerController::OnTouchTriggered()
+{
+    // Don't process if blocked
+    if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputHeld)) 
+        return;
+    
+    float HoldTime = GetWorld()->GetTimeSeconds() - TouchStartTime;
+    
+    // Get current mouse/touch position
+    float MouseX, MouseY;
+    GetMousePosition(MouseX, MouseY);
+    FVector2D ScreenPosition(MouseX, MouseY);
+    
+    if (TargetingStatus == ETargetingStatus::TargetingEnemy)
+    {
+        // Continue attacking while held
+        if (GetASC())
+        {
+            GetASC()->AbilityInputTagHeld(FAuraGameplayTags::Get().InputTag_LMB);
+        }
+    }
+    else if (HoldTime > 0.3f) // Only activate hold-to-move after a delay
+    {
+        // This is optional - hold and drag to continuously update movement
+        bIsTouchHeld = true;
+        
+        FHitResult HitResult;
+        GetHitResultAtScreenPosition(ScreenPosition, ECC_Visibility, false, HitResult);
+        
+        if (HitResult.bBlockingHit)
+        {
+            CachedDestination = HitResult.ImpactPoint;
+            
+            // Direct movement for drag
+            if (APawn* ControlledPawn = GetPawn())
+            {
+                const FVector WorldDirection = (CachedDestination - ControlledPawn->GetActorLocation()).GetSafeNormal();
+                ControlledPawn->AddMovementInput(WorldDirection);
+            }
+        }
+    }
+}
+
+void AAuraPlayerController::OnTouchCompleted()
+{
+    // Don't process if blocked
+    if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputReleased)) 
+        return;
+    
+    float TouchDuration = GetWorld()->GetTimeSeconds() - TouchStartTime;
+    
+    if (TargetingStatus == ETargetingStatus::TargetingEnemy)
+    {
+        // Stop attacking
+        if (GetASC())
+        {
+            GetASC()->AbilityInputTagReleased(FAuraGameplayTags::Get().InputTag_LMB);
+        }
+        
+        // Unhighlight
+        UnHighlightActor(ThisActor);
+        ThisActor = nullptr;
+        TargetingStatus = ETargetingStatus::NotTargeting;
+    }
+    else if (!bIsTouchHeld) // If we didn't hold and drag
+    {
+        // TAP TO MOVE - This is the key part!
+        // Get the final touch position
+        float MouseX, MouseY;
+        GetMousePosition(MouseX, MouseY);
+        FVector2D ScreenPosition(MouseX, MouseY);
+        
+        FHitResult HitResult;
+        GetHitResultAtScreenPosition(ScreenPosition, ECC_Visibility, false, HitResult);
+        
+        if (HitResult.bBlockingHit)
+        {
+            FVector Destination = HitResult.ImpactPoint;
+            APawn* ControlledPawn = GetPawn();
+            
+            if (ControlledPawn)
+            {
+                // Set up pathfinding for tap-to-move
+                if (UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(
+                    this, ControlledPawn->GetActorLocation(), Destination))
+                {
+                    Spline->ClearSplinePoints();
+                    for (const FVector& PointLoc : NavPath->PathPoints)
+                    {
+                        Spline->AddSplinePoint(PointLoc, ESplineCoordinateSpace::World);
+                    }
+                    
+                    if (NavPath->PathPoints.Num() > 0)
+                    {
+                        CachedDestination = NavPath->PathPoints.Last();
+                        bAutoRunning = true; // This enables tap-to-move!
+                        
+                        // Visual feedback at tap location
+                        if (ClickNiagaraSystem)
+                        {
+                            UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                                this, ClickNiagaraSystem, Destination);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Reset state
+    bIsTouchHeld = false;
+    FollowTime = 0.f;
 }
